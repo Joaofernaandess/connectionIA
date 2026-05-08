@@ -1,0 +1,296 @@
+extends ../layout/layout
+
+block vars
+    - var pageTitle= "SommusBliP"    
+
+block content
+
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-dark.navbar-fixed-top#home
+        a.navbar-brand(href="/home") 
+            img(src="./app/imagens/logo-branca.png")
+
+        button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation")
+            span.navbar-toggler-icon
+
+        div#navbarMenu.collapse.navbar-collapse
+            ul.navbar-nav.mr-auto
+            ul.navbar-nav
+                li.nav-item.dropdown.theme-dropdown
+                    button#themePreferenceButton.nav-link.btn.btn-link(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Alterar tema")
+                        span#themePreferenceIcon.theme-icon(role="presentation")
+                        span#themePreferenceLabel Tema
+                    div#themePreferenceMenu.dropdown-menu.dropdown-menu-right(aria-labelledby="themePreferenceButton")
+                        button.dropdown-item.theme-option(type="button" data-theme-option="light" onclick="setThemePreference('light')")
+                            span.theme-option-icon(role="presentation") ☀️
+                            span Tema claro
+                        button.dropdown-item.theme-option(type="button" data-theme-option="dark" onclick="setThemePreference('dark')")
+                            span.theme-option-icon(role="presentation") 🌙
+                            span Tema escuro
+                        button.dropdown-item.theme-option(type="button" data-theme-option="system" onclick="setThemePreference('system')")
+                            span.theme-option-icon(role="presentation") 🖥️
+                            span Tema do sistema
+                li.nav-item
+                    span#dropdownUser.nav-link(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+                        | Usuário
+                    //- div.dropdown-menu.dropdown-menu-right(aria-labelledby="dropdownUser")
+                li.nav-item
+                    a.nav-link.logout(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="logoff()" title="Sair") 
+                        span.icon.sb-logout
+
+    div.container-fluid
+        div.row
+            div#div-tickets.cols-padding
+                div.row
+                    div.col-12
+                        div.table-responsive-md
+                            table#table-atendimentos.table
+                                thead
+                                    tr
+                                        th(scope="col") 
+                                            span.title.text-left Atendimentos
+                                            span.btn-link.cursor-pointer(onclick="showFilter()" style="float: right" title="Filtrar atendimentos") 
+                                                span.icon.sb-filter
+                                            span#notificacaoAtivaBtn.btn-link.cursor-pointer(onclick="showNovoAtendimento()" style="float: right;margin: 0px 10px;" title="Novo atendimento")
+                                                span.icon.sb-novo
+
+                                tbody.scrollbar-style(onscroll="atendimentosOnScroll()")
+
+            div#div-chat.cols-padding.col-9.col-sm-9.col-md-9
+                div#empty.container.no-padding
+                    div.content
+                        p.title Nenhum atendimento selecionado
+
+                div#selected.container.no-padding.hidden
+                    div.content
+                        header.chat-header
+                            div.row.no-margin.align-items-center
+                                div.col-auto.d-md-none.pl-2.pr-0
+                                    button#backButton.btn.btn-link.p-0.cursor-pointer(type="button" onclick="mobileCloseChat()" title="Voltar")
+                                        svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24")
+                                            path(fill="none" stroke="#6c757d" stroke-width="2" d="M15 18l-6-6 6-6")
+                                div.col#showInfoButton.title.text-left.cursor-pointer.pl-0
+                                    | Contato
+
+                                div.col-auto#buttons.text-right.ml-auto
+                                    button#finalizarButton.btn.btn-link.cursor-pointer(title="Parar atendimento")
+                                        span.icon.sb-stop
+
+                                    button#transferirButton.btn.btn-link.cursor-pointer(title="Transferir atendimento")
+                                        span.icon.sb-transfer
+
+                                    button#atenderButton.btn.btn-link.cursor-pointer(title="Iniciar atendimento")
+                                        span.icon.sb-play
+                            div.row.no-margin
+                                div.col
+                                    p#chatSubtitle.subtitle
+
+                        div.chat-content
+                            div#chatSpeechTBody.scrollbar-style.chat-content-intern
+
+                        footer#enabledChatFooter.chat-footer.div-chat-input
+                            input#file(type='file' onchange="uploadFile()")
+                            input#recorder(type="file" accept="audio/*" capture="microphone")
+                            // preview area for pasted images
+                            div#clipboardPreview.div-clipboard-preview
+
+                            div.input-group
+                                div.input-group-prepend
+
+                                    button#emojiButton.emoji-button.btn.btn-outline-secondary(type="button" title="Enviar emoji") 
+                                        svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24")
+                                            path(fill="#6c757d" d="M9.153 11.603c.795 0 1.439-.879 1.439-1.962s-.644-1.962-1.439-1.962-1.439.879-1.439 1.962.644 1.962 1.439 1.962zm-3.204 1.362c-.026-.307-.131 5.218 6.063 5.551 6.066-.25 6.066-5.551 6.066-5.551-6.078 1.416-12.129 0-12.129 0zm11.363 1.108s-.669 1.959-5.051 1.959c-3.505 0-5.388-1.164-5.607-1.959 0 0 5.912 1.055 10.658 0zM11.804 1.011C5.609 1.011.978 6.033.978 12.228s4.826 10.761 11.021 10.761S23.02 18.423 23.02 12.228c.001-6.195-5.021-11.217-11.216-11.217zM12 21.354c-5.273 0-9.381-3.886-9.381-9.159s3.942-9.548 9.215-9.548 9.548 4.275 9.548 9.548c-.001 5.272-4.109 9.159-9.382 9.159zm3.108-9.751c.795 0 1.439-.879 1.439-1.962s-.644-1.962-1.439-1.962-1.439.879-1.439 1.962.644 1.962 1.439 1.962z")
+
+                                    button#fileButton.btn.btn-outline-secondary(type="button" for="file" title="Enviar anexo")
+                                        label(for='file')                                        
+                                            svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24")
+                                                path(fill="#6c757d" d="M1.816 15.556v.002c0 1.502.584 2.912 1.646 3.972s2.472 1.647 3.974 1.647a5.58 5.58 0 0 0 3.972-1.645l9.547-9.548c.769-.768 1.147-1.767 1.058-2.817-.079-.968-.548-1.927-1.319-2.698-1.594-1.592-4.068-1.711-5.517-.262l-7.916 7.915c-.881.881-.792 2.25.214 3.261.959.958 2.423 1.053 3.263.215l5.511-5.512c.28-.28.267-.722.053-.936l-.244-.244c-.191-.191-.567-.349-.957.04l-5.506 5.506c-.18.18-.635.127-.976-.214-.098-.097-.576-.613-.213-.973l7.915-7.917c.818-.817 2.267-.699 3.23.262.5.501.802 1.1.849 1.685.051.573-.156 1.111-.589 1.543l-9.547 9.549a3.97 3.97 0 0 1-2.829 1.171 3.975 3.975 0 0 1-2.83-1.173 3.973 3.973 0 0 1-1.172-2.828c0-1.071.415-2.076 1.172-2.83l7.209-7.211c.157-.157.264-.579.028-.814L11.5 4.36a.572.572 0 0 0-.834.018l-7.205 7.207a5.577 5.577 0 0 0-1.645 3.971z")
+
+                                textarea#chatText.form-control(rows=1, onkeyup="textChatOnKeyUp(event)" onkeydown="textChatOnKeyDown(event)")
+
+                                div.input-group-append
+                                    button#recordButton.btn.btn-outline-secondary(type="button" title="Iniciar gravação") 
+                                        svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24")
+                                            path(fill="#6c757d" d="M11.999 14.942c2.001 0 3.531-1.53 3.531-3.531V4.35c0-2.001-1.53-3.531-3.531-3.531S8.469 2.35 8.469 4.35v7.061c0 2.001 1.53 3.531 3.53 3.531zm6.238-3.53c0 3.531-2.942 6.002-6.237 6.002s-6.237-2.471-6.237-6.002H3.761c0 4.001 3.178 7.297 7.061 7.885v3.884h2.354v-3.884c3.884-.588 7.061-3.884 7.061-7.885h-2z")
+
+                                    div#recordDiv.div-record
+                                        button#recordSendButton.btn.btn-outline-secondary(title="Enviar gravação")
+                                            svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24")
+                                                path(fill="#26aa5a" d="m256 512c-141.164062 0-256-114.835938-256-256s114.835938-256 256-256 256 114.835938 256 256-114.835938 256-256 256zm0-480c-123.519531 0-224 100.480469-224 224s100.480469 224 224 224 224-100.480469 224-224-100.480469-224-224-224zm0 0")
+                                                path(fill="#26aa5a" d="m232 341.332031c-4.097656 0-8.191406-1.554687-11.308594-4.691406l-69.332031-69.332031c-6.25-6.253906-6.25-16.386719 0-22.636719s16.382813-6.25 22.636719 0l58.023437 58.027344 127.363281-127.359375c6.25-6.25 16.382813-6.25 22.632813 0s6.25 16.382812 0 22.632812l-138.667969 138.667969c-3.15625 3.136719-7.25 4.691406-11.347656 4.691406zm0 0")
+
+                                        div.div-record-timer
+                                            svg.recording(width="16px" height="16px")
+                                                circle(id="what" cx="8" cy="8" r="8" fill='red')
+                                            span#recordTimerTimer
+                                                | 00:00:00
+
+                                        button#recordCancelButton.btn.btn-outline-secondary(title="Cancelar gravação")
+                                            svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24")
+                                                path(fill="#ee3f19" d="m256 512c-141.164062 0-256-114.835938-256-256s114.835938-256 256-256 256 114.835938 256 256-114.835938 256-256 256zm0-480c-123.519531 0-224 100.480469-224 224s100.480469 224 224 224 224-100.480469 224-224-100.480469-224-224-224zm0 0")
+                                                path(fill="#ee3f19" d="M341.525,310.827l-56.151-56.071l56.151-56.071c7.735-7.735,7.735-20.29,0.02-28.046 c-7.755-7.775-20.31-7.755-28.065-0.02l-56.19,56.111l-56.19-56.111c-7.755-7.735-20.31-7.755-28.065,0.02 c-7.735,7.755-7.735,20.31,0.02,28.046l56.151,56.071l-56.151,56.071c-7.755,7.735-7.755,20.29-0.02,28.046 c3.868,3.887,8.965,5.811,14.043,5.811s10.155-1.944,14.023-5.792l56.19-56.111l56.19,56.111 c3.868,3.868,8.945,5.792,14.023,5.792c5.078,0,10.175-1.944,14.043-5.811C349.28,331.117,349.28,318.562,341.525,310.827z")
+
+
+                                    button#sendButton.btn.btn-outline-secondary(type="button" style="display: none;", title="Enviar mensagem")
+                                        svg(xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24")
+                                            path(fill="#6c757d" d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z")
+
+            div#div-info.cols-padding.col-2.col-sm-2.col-md-2
+                div.container.no-padding
+                    div.content
+                        header.chat-header.chat-header-info
+                            span.title.text-left Dados do Contato
+                            span.btn-link.cursor-pointer(onclick="hideDivInfo()" style="float: right; line-height: 1.5;") 
+                                svg(height="0.7rem" width="0.7rem" viewBox="0 0 329 329" xmlns="http://www.w3.org/2000/svg")
+                                    path(d="m194.800781 164.769531 128.210938-128.214843c8.34375-8.339844 8.34375-21.824219 0-30.164063-8.339844-8.339844-21.824219-8.339844-30.164063 0l-128.214844 128.214844-128.210937-128.214844c-8.34375-8.339844-21.824219-8.339844-30.164063 0-8.34375 8.339844-8.34375 21.824219 0 30.164063l128.210938 128.214843-128.210938 128.214844c-8.34375 8.339844-8.34375 21.824219 0 30.164063 4.15625 4.160156 9.621094 6.25 15.082032 6.25 5.460937 0 10.921875-2.089844 15.082031-6.25l128.210937-128.214844 128.214844 128.214844c4.160156 4.160156 9.621094 6.25 15.082032 6.25 5.460937 0 10.921874-2.089844 15.082031-6.25 8.34375-8.339844 8.34375-21.824219 0-30.164063zm0 0")
+
+                        div#contact.scrollbar-style
+                                          
+
+    script.
+        socketIoInit();
+        homeOnLoad();
+
+
+block modal
+    div#modalFilter.modal.fade(tabindex="-1" role="dialog" aria-labelledby="modal" aria-hidden="true")
+        div.modal-dialog.modal-lg.modal-dialog-centered(role="document")
+            div.modal-content
+                div.modal-header
+                    h5.modal-title Filtrar atendimentos
+                    button.close(type="button" data-dismiss="modal" aria-label="Close")
+                        span(aria-hidden="true") &times;
+
+                div.modal-body
+                    tr
+                        th#filtros(scope="col" style="display: none")
+                            div.form-row
+                                div.col-12
+                                    div.form-group                        
+                                        label(for="selectAtendentes") Atendente
+                                        select#selectAtendentes.form-control(onchange="selectAtendentesOnChange()")
+                            div.form-row
+                                div.col-6
+                                    div.form-group
+                                        label(for="selectEquipes") Equipe
+                                        select#selectEquipes.form-control(onchange="selectEquipesOnChange();")
+
+                                div.col-6
+                                    div.form-group
+                                        label(for="selectDepartamentos") Departamento
+                                        select#selectDepartamentos.form-control(onchange="selectDepartamentosOnChange();")
+
+                            div.form-row
+                                div.col-4
+                                    div.form-group
+                                        label(for="inputAtendimentoId") Número atendimento
+                                        input#inputAtendimentoId.form-control(type="number" onkeyup="inputIdAtendimentoOnChange()")
+
+                                div.col-4
+                                    div.form-group
+                                        label(for="inputDataAtedimentoInicial") Início do atendimento
+                                        input#inputDataAtedimentoInicial.form-control(type="date" onchange="inputDataAtedimentoInicialOnChange()")
+
+                                div.col-4
+                                    div.form-group
+                                        label(for="inputDataAtedimentoFinal") Fim do atendimento
+                                        input#inputDataAtedimentoFinal.form-control(type="date" onchange="inputDataAtedimentoFinalOnChange()")
+                            div.form-row
+                                div.col-6
+                                    div.form-group
+                                        label(for="inputContato") Nome do contato
+                                        input#inputContato.form-control(onchange="inputContatoOnChange()")
+                                div.col-6
+                                    div.form-group
+                                        label(for="selectCanais") Canal
+                                        select#selectCanais.form-control(onchange="selectCanaisOnChange()")
+                            div.form-row
+                                div.col-12
+                                    div.form-group
+                                        p.label-checkbox Status
+
+                                        div.custom-control.custom-checkbox.custom-control-inline
+                                            input#checkWaiting(type="checkbox" class="custom-control-input" onchange="checkWaitingOnChange()")
+                                            label.custom-control-label(for="checkWaiting") Aguardando
+
+                                        div.custom-control.custom-checkbox.custom-control-inline
+                                            input#checkPending(type="checkbox" class="custom-control-input" onchange="checkPendingOnChange()")
+                                            label.custom-control-label(for="checkPending") Pendente
+
+                                        div.custom-control.custom-checkbox.custom-control-inline
+                                            input#checkOpen(type="checkbox" class="custom-control-input" onchange="checkOpenOnChange()")
+                                            label.custom-control-label(for="checkOpen") Atendendo
+
+                                        div.custom-control.custom-checkbox.custom-control-inline
+                                            input#checkClosed(type="checkbox" class="custom-control-input" onchange="checkClosedOnChange()")
+                                            label.custom-control-label(for="checkClosed") Finalizado
+
+                div.modal-footer(style="display: flow-root;")
+                    button.btn.btn-secondary.float-left(type="button" onclick="clearFilterSelects()") Limpar
+
+                    button.btn.btn-secondary.float-right(type="button" data-dismiss="modal") Cancelar
+                    button.btn.btn-primary.float-right(type="button" onclick="filterAtendimentos()") Filtrar
+
+    div#modalEnvioAtivoMsg.modal.fade(tabindex="-1" role="dialog" aria-labelledby="modal" aria-hidden="true")
+        div.modal-dialog.modal-lg.modal-dialog-centered(role="document")
+            div.modal-content
+                div.modal-header
+                    h5.modal-title Novo Atendimento
+                    button.close(type="button" data-dismiss="modal" aria-label="Close")
+                        span(aria-hidden="true") &times;
+
+                div.modal-body
+                    tr
+                        th#filtrosModalEnvioMsgAtiva(scope="col" style="display: none")
+                            div.form-row
+                                div.col-8
+                                    div#selectContatosModalEnvioMsgAtiva.form-group
+                                        label(for="selectContatosModalNotAtiva") Contato
+                                        div.d-flex.align-items-center
+                                            div.w-100.mr-1.autocomplete
+                                                input#selectContatosModalNotAtiva.form-control.mr-1(placeholder="Selecione o contato")
+                                            button.btn.btn-primary.cursor-pointer.justify-content-center(onclick="novoContatoNotificacaoAtiva()" title="Novo contato")
+                                                span.icon.sb-list-novo
+                                    div#nomeContatoNotAtivaDiv.form-group(style="display: none;")
+                                        label(for="inputNomeContatoNotAtiva") Contato*
+                                        div.d-flex.align-items-center
+                                            input#inputNomeContatoNotAtiva.form-control.mr-1(onchange="inputNovoContatoOnChange()")
+                                            button.btn.btn-primary.cursor-pointer.justify-content-center(onclick="cancelarNovoContatoNotificacaoAtiva()" title="Selecionar contato")
+                                                span.icon.sb-lista.my-auto
+                                div.col-4
+                                    div.form-group
+                                        label(for="inputWhatsAppContatoNotAtiva") WhatsApp*
+                                        input#inputWhatsAppContatoNotAtiva.form-control.whatsapp(onchange="inputNovoContatoOnChange()" disabled)
+                                div.form-row.w-100
+                                    div.col-6
+                                        div.form-group
+                                            label(for="inputCidadeContatoNotAtiva") Cidade
+                                            input#inputCidadeContatoNotAtiva.form-control(onchange="inputNovoContatoOnChange()" disabled)
+                                    div.col-6
+                                        div.form-group
+                                            label(for="inputEmpresaContatoNotAtiva") Empresa
+                                            input#inputEmpresaContatoNotAtiva.form-control(onchange="inputNovoContatoOnChange()" disabled)
+
+                            div.form-row
+                                div.col-12
+                                    div.form-group
+                                        label(for="selectModelosModalNotAtiva") Modelo
+                                        select#selectModelosModalNotAtiva.form-control(onchange="selectModeloOnChange();" disabled)
+                            div.form-row#parametrosNotAtiva(style="display: none;")
+                            div.form-row#modeloConteudoNotAtiva(style="display: none;")
+                            div.form-row#pdfUploadNotAtiva(style="display: none;")
+                                div.col-12
+                                    div.form-group
+                                        label#labelAnexoNotAtiva(for="inputPdfNotAtiva") Anexar arquivo*
+                                        div#pdfInputWrapperNotAtiva
+                                            input#inputPdfNotAtiva.form-control-file(type="file" accept=".pdf,.jpg,.jpeg,.png,.mp4" onchange="validarPdfAnexado()")
+                                        small#helpTextAnexoNotAtiva.form-text.text-muted O anexo é obrigatório para este modelo.
+                                        div#pdfPreviewNotAtiva.mt-2(style="display: none;")
+                                            i.fa.fa-file-pdf-o.text-danger
+                                            span#pdfFileNameNotAtiva.ml-2
+                                            button.btn.btn-sm.btn-link.text-danger.ml-2(type="button" onclick="removerPdfAnexado()" title="Remover PDF")
+                                                i.fa.fa-times
+
+
+                div.modal-footer(style="display: flow-root;")
+                    button.btn.btn-secondary.float-right(type="button" data-dismiss="modal") Cancelar
+                    button.btn.btn-primary.float-right.mr-2(type="button" onclick="enviarNotificacaoAtiva()") Enviar

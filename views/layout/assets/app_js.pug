@@ -1,0 +1,17 @@
+block vars
+
+script(src="app/js/md5.js")
+script(src="app/js/snack.js")
+script(src="app/js/loading.js")
+script(src="app/js/common.js")
+
+script(src="app/js/login.js")
+script(src="app/js/api.js")
+
+- var shouldLoadChatScripts = (typeof loadChatScripts === 'undefined') ? true : loadChatScripts
+
+if !login && shouldLoadChatScripts
+    script(src="app/js/home.js")
+    script(src="app/js/autocomplete.js")
+    script(src="app/js/chat.js")
+    script(src="app/js/contato.js")

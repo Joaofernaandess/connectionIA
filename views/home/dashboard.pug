@@ -1,0 +1,111 @@
+extends ../layout/layout
+
+block vars
+    - var pageTitle = "SommusBliP - Dashboard"
+    - var loadChatScripts = false
+
+block extraHead
+    link(rel="stylesheet", href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap")
+    link(rel="stylesheet", href="app/css/dashboard.css")
+
+block extraScripts
+    script(src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js")
+    script(src="app/js/dashboard.js")
+
+block content
+    main.dashboard-page
+        header.dashboard-topbar
+            div.dashboard-topbar__text
+                h1 Dashboard de Conversas
+                div.dashboard-topbar__meta
+                    span
+                        | Atualizado há&nbsp;
+                        strong#lastUpdateValue --
+                    span.dashboard-topbar__meta-separator ·
+                    span
+                        | Equipes ativas:&nbsp;
+                        strong#onlineTeams --
+            button#dashboardRefresh.dashboard-topbar__action(type="button")
+                span Atualizar dados
+        section.dashboard-metrics
+            .row
+                .col-xl-3.col-lg-6.mb-3
+                    .metric-card.metric-card--primary
+                        div.metric-card__icon
+                            span.icon.sb-lista
+                        p.metric-card__label Conversas iniciadas no dia
+                        h3.metric-card__value#startedCount --
+                        span.metric-card__change#startedChange --
+                .col-xl-3.col-lg-6.mb-3
+                    .metric-card.metric-card--success
+                        div.metric-card__icon
+                            span.icon.sb-concluido
+                        p.metric-card__label Conversas finalizadas no dia
+                        h3.metric-card__value#finishedCount --
+                        span.metric-card__change#finishedChange --
+                .col-xl-3.col-lg-6.mb-3
+                    .metric-card.metric-card--warning
+                        div.metric-card__icon
+                            span.icon.sb-importante
+                        p.metric-card__label Conversas aguardando atendimento
+                        h3.metric-card__value#waitingCount --
+                        span.metric-card__change#waitingChange --
+                .col-xl-3.col-lg-6.mb-3
+                    .metric-card.metric-card--info
+                        div.metric-card__icon
+                            span.icon.sb-play
+                        p.metric-card__label Conversas em atendimento
+                        h3.metric-card__value#inProgressCount --
+                        span.metric-card__change#inProgressChange --
+        section.dashboard-visuals
+            .row
+                .col-xl-7.col-lg-12.mb-3
+                    .dashboard-card
+                        div.dashboard-card__header
+                            h2 Fluxo de conversas por hora
+                            span.dashboard-card__badge Hoje
+                        div.dashboard-card__chart
+                            canvas#flowChart
+                .col-xl-5.col-lg-12.mb-3
+                    .dashboard-card.dashboard-card--rating
+                        div.dashboard-card__header
+                            h2 Nota média de avaliação
+                            span.dashboard-card__badge Últimas 100 respostas
+                        div.rating-widget
+                            canvas#ratingChart(width="160" height="160")
+                            div.rating-widget__value
+                                span.rating-widget__score#ratingValue --
+                                small.rating-widget__trend#ratingTrend --
+                        p.rating-widget__description Satisfação do atendimento nas últimas interações coletadas.
+                .col-xl-6.col-lg-12.mb-3
+                    .dashboard-card
+                        div.dashboard-card__header
+                            h2 Média de conversas diárias
+                            span.dashboard-card__badge Últimos 7 dias
+                        div.dashboard-card__value
+                            span.dashboard-card__kpi#dailyAverageValue --
+                            small.dashboard-card__subtitle Evolução diária das conversas concluídas.
+                        div.dashboard-card__chart
+                            canvas#dailyAverageChart
+        section.dashboard-queues
+            .row
+                .col-xl-5.mb-3
+                    .dashboard-card
+                        div.dashboard-card__header
+                            h2 Fila de conversas aguardando
+                            span.dashboard-card__tag#waitingAverageTime Tempo médio --
+                        ul.dashboard-list#waitingList
+                .col-xl-7.mb-3
+                    .dashboard-card
+                        div.dashboard-card__header
+                            h2 Conversas em atendimento
+                            span.dashboard-card__tag#activeTeams --
+                        div.table-responsive
+                            table.dashboard-table
+                                thead
+                                    tr
+                                        th Contato
+                                        th Canal
+                                        th Atendente
+                                        th Tempo
+                                tbody#ongoingTable

@@ -1,0 +1,12 @@
+.full-screen {
+    height: 100vh;
+}
+
+.logo-login {
+    padding: 40px 40px 20px 40px;
+}
+
+.logo-login img {
+    /* height: 60px; */
+    width: 100%;
+}

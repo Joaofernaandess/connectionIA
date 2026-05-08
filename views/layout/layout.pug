@@ -1,0 +1,62 @@
+doctype html
+html
+    block vars
+    head
+        title #{pageTitle}
+
+        meta(name='viewport' content='width=device-width, initial-scale=1.0')
+        meta(name='mobile-web-app-capable' content='yes')
+        meta(name='apple-mobile-web-app-capable' content='yes')
+
+        link(rel="icon" href="./app/imagens/icone.png")
+
+        script.
+            (function () {
+                try {
+                    var storageKey = 'sommus_theme_preference';
+                    var preference = localStorage.getItem(storageKey) || 'system';
+                    var theme = (preference === 'dark' || preference === 'light') ? preference : 'light';
+
+                    if (preference === 'system') {
+                        if (window.matchMedia) {
+                            var mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                            theme = mediaQuery.matches ? 'dark' : 'light';
+                        } else {
+                            theme = 'light';
+                        }
+                    }
+
+                    document.documentElement.setAttribute('data-theme', theme);
+                    document.documentElement.setAttribute('data-theme-preference', preference);
+                } catch (error) {
+                    console.warn('Não foi possível aplicar o tema automaticamente.', error);
+                }
+            })();
+
+        include assets/css
+        include assets/app_css
+
+        include assets/js
+        include assets/app_js
+
+        block extraHead
+
+        if login
+            script.
+                validaToken();
+
+    body(onload="commonOnLoad()")
+        include header
+        block content
+        include footer
+        block modal
+        include modal
+
+        block extraScripts
+
+        if !login
+            script(src="app/js/record.js")
+
+            script.
+                validaLogin();
+                setAudio();

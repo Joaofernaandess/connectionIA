@@ -1,0 +1,14 @@
+.card {
+    background-color: var(--color-surface);
+    -moz-box-shadow: var(--shadow-elevation);
+    -webkit-box-shadow: var(--shadow-elevation);
+    box-shadow: var(--shadow-elevation);
+    border-radius: 5px;
+    min-height: 60px;
+}
+
+.card-header,
+.card-footer {
+    background-color: transparent;
+    border: none;
+}
