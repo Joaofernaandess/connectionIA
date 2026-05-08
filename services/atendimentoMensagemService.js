@@ -570,11 +570,20 @@ async function createAtendimentoMensagemWebHook(body) {
                         }
                     }
                 } else {
-                    atendimentoMensagem.conteudo = JSON.stringify(body.content);
+                    //atualização do bug #15 issues
+                    const descricao = normalizeTextContent(body.content);
+                    let content = body.content;
+
+                    if (descricao && descricao.trim().length > 0 && descricao !== JSON.stringify(body.content)) {
+                        content = { ...body.content, text: descricao };
+                    }
+
+                    atendimentoMensagem.conteudo = JSON.stringify(content);
                     atendimentoMensagem.processarArquivo = {
                         atendimentoId: atendimento.id,
-                        content: body.content,
+                        content: content,
                         metadata: body.metadata
+                    //alteração feita até aqui para tentar resolver o problema de mensagens de arquivo sem texto
                     };
                 }
             } else {

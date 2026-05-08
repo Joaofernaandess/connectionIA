@@ -8,3 +8,9 @@ Aplicação da Sommus Sistemas integrada ao BLiP da Take que lista os atendiment
 - [Publicando o SommusBLip](./doc/publicacao.md#publicando-o-sommusblip)
 - [Como criar arquivos de documentação](./doc/documentacao.md)
 - [Commits semânticos](https://github.com/sommus/SommusBLiP-web/blob/master/doc/commits_semanticos.md)
+
+
+
+// Alteração no atendimentoMensagemService.js para issues #16 ( metodo: createAtendimentoMensagemWebHook )
+
+//
