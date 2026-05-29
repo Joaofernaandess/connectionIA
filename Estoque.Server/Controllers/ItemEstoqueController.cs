@@ -135,5 +135,27 @@ public static class ItemEstoqueController
         .Produces<List<HistoricoRecuperado>>(StatusCodes.Status200OK)
         .Produces<string>(StatusCodes.Status500InternalServerError);
         #endregion
+
+        #region [ get - relatório pizza ]
+        app.MapGet("v1/relatorios/itens-estoque/pizza",
+            async (ItemEstoqueService service,
+                   Guid unidadeOrganizacionalId,
+                   Guid? espacoId,
+                   int? tipoUnidadeMedida) =>
+            {
+                var result = await service.ObterPizzaDashboard(
+                    unidadeOrganizacionalId,
+                    espacoId,
+                    tipoUnidadeMedida
+                );
+
+                return Results.Ok(result);
+            })
+            .WithTags("relatorios")
+            .WithSummary("Retorna dados agregados para o gráfico de pizza do estoque")
+            .WithDescription("Retorna quantidades agregadas por espaço ou tipo de unidade para uso no dashboard.")
+            .Produces<List<PizzaDashboardItem>>(StatusCodes.Status200OK)
+            .Produces<string>(StatusCodes.Status500InternalServerError);
+        #endregion
     }
 }

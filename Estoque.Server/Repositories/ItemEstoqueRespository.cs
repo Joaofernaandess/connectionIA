@@ -359,11 +359,15 @@ public class ItemEstoqueRepository : BaseRepository
             cmd.Parameters.Add("unidade_organizacional_id", NpgsqlDbType.Uuid)
                 .Value = unidadeOrganizacionalId;
 
-            cmd.Parameters.Add("espaco_id", NpgsqlDbType.Uuid)
-                .Value = espacoId ?? (object)DBNull.Value;
+            if (espacoId != null)
+            {
+                cmd.Parameters.Add("espaco_id", NpgsqlDbType.Uuid).Value = espacoId.Value;
+            }
 
-            cmd.Parameters.Add("tipo_unidade_medida", NpgsqlDbType.Integer)
-                .Value = tipoUnidadeMedida ?? (object)DBNull.Value;
+            if (tipoUnidadeMedida != null)
+            {
+                cmd.Parameters.Add("tipo_unidade_medida", NpgsqlDbType.Integer).Value = tipoUnidadeMedida.Value;
+            }
 
             await using var reader = await cmd.ExecuteReaderAsync();
 
