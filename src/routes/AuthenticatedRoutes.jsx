@@ -4,12 +4,11 @@ import ItemEstoqueView from '../components/ItemEstoqueView';
 import ValidarUsuariosView from '../components/ValidarUsuariosView';
 import EspacoDetailPage from '../pages/espacos/EspacoDetailPage';
 import NovoEspacoPage from '../pages/espacos/NovoEspacoPage';
-import HomeHero from '../pages/home/HomeHero';
+import DashboardPage from '../pages/home/DashboardPage';
 import InstallIosPage from '../pages/home/InstallIosPage';
 import ProfilePage from '../pages/home/ProfilePage';
 import ItemEstoqueDetailPage from '../pages/itemEstoque/ItemEstoqueDetailPage';
 import NovoItemEstoquePage from '../pages/itemEstoque/NovoItemEstoquePage';
-import DashboardPage from '../pages/home/DashboardPage';
 
 export default function AuthenticatedRoutes({
     fieldErrors,
@@ -24,13 +23,13 @@ export default function AuthenticatedRoutes({
 }) {
     return (
         <Routes>
-             <Route
+            <Route
                 index
                 element={
-                <DashboardPage
-                    token={token}
-                    unidadeOrganizacionalId={unidadeOrganizacionalId}
-                />
+                    <DashboardPage
+                        token={token}
+                        unidadeOrganizacionalId={unidadeOrganizacionalId}
+                    />
                 }
             />
             <Route

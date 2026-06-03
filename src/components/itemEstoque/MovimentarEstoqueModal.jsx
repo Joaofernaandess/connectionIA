@@ -1,4 +1,5 @@
 import { maskQuantityInput } from '../../utils/quantity';
+import ZeniteIcon from '../ZeniteIcon';
 
 const getInputClassName = (isError) => `w-full no-field-margin ${isError ? 'is-invalid' : ''}`;
 
@@ -21,7 +22,10 @@ export default function MovimentarEstoqueModal({
                         <div className="mb-2">
                             <span className="label-sm text-muted">Operação</span>
                             <div className={`movement-operation-summary ${movimentacaoData.tipoMovimentacao == 2 ? 'movement-operation-exit' : 'movement-operation-entry'}`}>
-                                {movimentacaoData.tipoMovimentacao == 2 ? 'Saída (-)' : 'Entrada (+)'}
+                                <ZeniteIcon name={movimentacaoData.tipoMovimentacao == 2 ? 'minus' : 'plus'} size={18} />
+                                <span className="button-icon-text">
+                                    {movimentacaoData.tipoMovimentacao == 2 ? 'Saída' : 'Entrada'}
+                                </span>
                             </div>
                             {fieldErrors.TipoMovimentacao && <small className="invalid-feedback d-block">{fieldErrors.TipoMovimentacao}</small>}
                         </div>

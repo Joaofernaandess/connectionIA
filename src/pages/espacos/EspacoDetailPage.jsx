@@ -9,10 +9,9 @@ import {
     listarItensDoEspaco,
     obterEspaco
 } from '../../services/espacoService';
-import { atualizarItemEstoque } from '../../services/itemEstoqueService';
+import { excluirItemEstoque } from '../../services/itemEstoqueService';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../../utils/apiUtils';
 import { criarPayloadEspaco } from '../../utils/espacoViewModel';
-import { formatQuantityInput, maskQuantityInput, parseQuantity } from '../../utils/quantity';
 
 export default function EspacoDetailPage({ token, unidadeOrganizacionalId }) {
     const navigate = useNavigate();
@@ -21,14 +20,14 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId }) {
     const [espacoSelecionado, setEspacoSelecionado] = useState(null);
     const [formEdicao, setFormEdicao] = useState({ nome: '', descricao: '' });
     const [itensDoEspaco, setItensDoEspaco] = useState([]);
-    const [quantidadesEditadas, setQuantidadesEditadas] = useState({});
-    const [salvandoItemId, setSalvandoItemId] = useState(null);
+    const [excluindoItemId, setExcluindoItemId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [loadingItens, setLoadingItens] = useState(false);
     const [erro, setErro] = useState('');
     const [sucesso, setSucesso] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [itemParaExcluir, setItemParaExcluir] = useState(null);
 
     const carregarItens = useCallback(async () => {
         if (!espacoId) return;
@@ -40,9 +39,6 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId }) {
             if (response.ok) {
                 const itens = await response.json();
                 setItensDoEspaco(itens);
-                setQuantidadesEditadas(Object.fromEntries(
-                    itens.map(item => [item.itemEstoqueId, formatQuantityInput(item.quantidade)])
-                ));
             } else {
                 const mensagem = await extrairErro(response);
                 if (mensagem) setErro(mensagem);
@@ -141,44 +137,20 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId }) {
         }
     };
 
-    const handleQuantidadeItemChange = (itemId, value) => {
-        setQuantidadesEditadas(prev => ({
-            ...prev,
-            [itemId]: maskQuantityInput(value)
-        }));
-    };
+    const handleExcluirItem = async () => {
+        if (!itemParaExcluir) return;
 
-    const handleSalvarQuantidadeItem = async (item) => {
         setErro('');
         setSucesso('');
-        setSalvandoItemId(item.itemEstoqueId);
-
-        const novaQuantidade = parseQuantity(quantidadesEditadas[item.itemEstoqueId]);
-        const payload = {
-            unidadeOrganizacionalId,
-            espacoId: item.espacoId || espacoId,
-            descricao: item.descricao,
-            tipoUnidadeMedida: parseInt(item.tipoUnidadeMedida),
-            quantidade: novaQuantidade
-        };
+        setExcluindoItemId(itemParaExcluir.itemEstoqueId);
 
         try {
-            const response = await atualizarItemEstoque({ token, itemEstoqueId: item.itemEstoqueId, payload });
+            const response = await excluirItemEstoque({ token, itemEstoqueId: itemParaExcluir.itemEstoqueId });
 
-            if (response.ok) {
+            if (response.ok || response.status === 204) {
                 const mensagem = await extrairMensagem(response);
-                setItensDoEspaco(prev => prev.map(atual =>
-                    atual.itemEstoqueId === item.itemEstoqueId
-                        ? { ...atual, quantidade: novaQuantidade }
-                        : atual
-                ));
-                setQuantidadesEditadas(prev => ({
-                    ...prev,
-                    [item.itemEstoqueId]: formatQuantityInput(novaQuantidade)
-                }));
+                setItensDoEspaco(prev => prev.filter(atual => atual.itemEstoqueId !== itemParaExcluir.itemEstoqueId));
                 if (mensagem) setSucesso(mensagem);
-            } else if (response.status === 400) {
-                await aplicarErrosCampos(response, setFieldErrors, setErro);
             } else {
                 const mensagem = await extrairErro(response);
                 setErro(mensagem);
@@ -186,7 +158,8 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId }) {
         } catch (error) {
             console.error(error);
         } finally {
-            setSalvandoItemId(null);
+            setExcluindoItemId(null);
+            setItemParaExcluir(null);
         }
     };
 
@@ -221,14 +194,15 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId }) {
             messageModal={messageModal}
             onChangeFormEdicao={setFormEdicao}
             onCloseDelete={() => setShowDeleteModal(false)}
+            onCloseDeleteItem={() => setItemParaExcluir(null)}
             onConfirmarEdicao={handleConfirmarEdicao}
+            onConfirmDeleteItem={handleExcluirItem}
             onExcluir={handleExcluirEspaco}
+            onExcluirItem={setItemParaExcluir}
             onOpenDelete={() => setShowDeleteModal(true)}
-            onQuantidadeItemChange={handleQuantidadeItemChange}
-            onSalvarQuantidadeItem={handleSalvarQuantidadeItem}
             onVoltar={() => navigate('/espacos')}
-            quantidadesEditadas={quantidadesEditadas}
-            salvandoItemId={salvandoItemId}
+            excluindoItemId={excluindoItemId}
+            showDeleteItemModal={!!itemParaExcluir}
             showDeleteModal={showDeleteModal}
         />
     );

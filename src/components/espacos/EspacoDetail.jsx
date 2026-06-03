@@ -1,3 +1,4 @@
+import ExcluirItemModal from '../itemEstoque/ExcluirItemModal';
 import ExcluirEspacoModal from './ExcluirEspacoModal';
 import ItensDoEspacoGrid from './ItensDoEspacoGrid';
 
@@ -12,12 +13,13 @@ export default function EspacoDetail({
     onCloseDelete,
     onConfirmarEdicao,
     onExcluir,
+    onExcluirItem,
+    onCloseDeleteItem,
+    onConfirmDeleteItem,
     onOpenDelete,
-    onQuantidadeItemChange,
-    onSalvarQuantidadeItem,
     onVoltar,
-    quantidadesEditadas,
-    salvandoItemId,
+    excluindoItemId,
+    showDeleteItemModal,
     showDeleteModal
 }) {
     return (
@@ -57,10 +59,8 @@ export default function EspacoDetail({
             <ItensDoEspacoGrid
                 itens={itensDoEspaco}
                 loading={loadingItens}
-                onQuantidadeChange={onQuantidadeItemChange}
-                onSalvarQuantidade={onSalvarQuantidadeItem}
-                quantidadesEditadas={quantidadesEditadas}
-                salvandoItemId={salvandoItemId}
+                onExcluirItem={onExcluirItem}
+                excluindoItemId={excluindoItemId}
             />
 
             <div className="detail-action-bar">
@@ -77,6 +77,10 @@ export default function EspacoDetail({
 
             {showDeleteModal && (
                 <ExcluirEspacoModal onClose={onCloseDelete} onConfirm={onExcluir} />
+            )}
+
+            {showDeleteItemModal && (
+                <ExcluirItemModal onClose={onCloseDeleteItem} onConfirm={onConfirmDeleteItem} />
             )}
 
             {messageModal}

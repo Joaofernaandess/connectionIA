@@ -65,9 +65,6 @@ export default function Sidebar({ isAdmin, isInstalled, onInstallClick, onLogout
                         Alterar Meus Dados
                     </NavLink>
 
-                    <label htmlFor="menu-toggle" className="button button-outline sidebar-close-button">
-                        Fechar Menu
-                    </label>
                     <button onClick={onLogoutClick} className="button button-danger sidebar-logout-button">
                         Sair do Sistema
                     </button>

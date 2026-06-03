@@ -1,14 +1,13 @@
-import { TIPO_UNIDADE } from '../../constants/tipoUnidade';
-import { formatQuantity, parseQuantity } from '../../utils/quantity';
+import { TIPO_UNIDADE, getTipoUnidadeSigla } from '../../constants/tipoUnidade';
+import { formatQuantity } from '../../utils/quantity';
 import LoadingWaves from '../LoadingWaves';
+import ZeniteIcon from '../ZeniteIcon';
 
 export default function ItensDoEspacoGrid({
     itens,
     loading,
-    onQuantidadeChange,
-    onSalvarQuantidade,
-    quantidadesEditadas,
-    salvandoItemId
+    onExcluirItem,
+    excluindoItemId
 }) {
     if (loading) {
         return <LoadingWaves variant="cards" rows={3} label="Carregando inventário" />;
@@ -35,27 +34,21 @@ export default function ItensDoEspacoGrid({
                                     <h4 className="space-item-title">{item.descricao}</h4>
                                     <small className="space-item-unit">{TIPO_UNIDADE[item.tipoUnidadeMedida] || 'UN'}</small>
                                 </div>
-                                <div className="space-item-quantity-badge">
-                                    {formatQuantity(item.quantidade)}
+                                <div className="space-item-actions">
+                                    <div className="space-item-quantity-badge">
+                                        {formatQuantity(item.quantidade)} {getTipoUnidadeSigla(item.tipoUnidadeMedida)}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="button-icon-danger"
+                                        onClick={() => onExcluirItem(item)}
+                                        disabled={excluindoItemId === item.itemEstoqueId}
+                                        aria-label={`Excluir ${item.descricao}`}
+                                    >
+                                        <ZeniteIcon name="trash" size={20} />
+                                    </button>
                                 </div>
                             </div>
-                            <div>
-                                <label className="label-sm">Quantidade</label>
-                                <input
-                                    type="text"
-                                    inputMode="decimal"
-                                    value={quantidadesEditadas[item.itemEstoqueId] ?? ''}
-                                    onChange={e => onQuantidadeChange(item.itemEstoqueId, e.target.value)}
-                                    className="w-full no-field-margin"
-                                />
-                            </div>
-                            <button
-                                className="button button-outline button-full"
-                                onClick={() => onSalvarQuantidade(item)}
-                                disabled={salvandoItemId === item.itemEstoqueId || parseQuantity(quantidadesEditadas[item.itemEstoqueId]) === parseQuantity(item.quantidade)}
-                            >
-                                {salvandoItemId === item.itemEstoqueId ? 'Salvando...' : 'Atualizar quantidade'}
-                            </button>
                         </div>
                     </div>
                 </div>

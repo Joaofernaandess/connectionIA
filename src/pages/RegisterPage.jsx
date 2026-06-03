@@ -7,6 +7,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import UnidadeComboBox from '../components/UnidadeComboBox';
 import { getBaseUrl } from '../utils/apiConfig';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../utils/apiUtils';
+import { encryptedJsonBody } from '../utils/payloadCrypto';
 
 export default function RegisterPage() {
     const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function RegisterPage() {
             const response = await fetch(`${getBaseUrl()}/v1/usuarios`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: await encryptedJsonBody(payload)
             });
 
             if (response.ok) {

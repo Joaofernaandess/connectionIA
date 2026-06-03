@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import ZeniteIcon from './ZeniteIcon';
 
 export default function ThemeToggle({ fixo = true }) {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
@@ -19,9 +20,15 @@ export default function ThemeToggle({ fixo = true }) {
             onClick={toggleTheme}
         >
             {theme === 'dark' ? (
-                <>☀️<span className="texto-mobile button-icon-text">Modo Claro</span></>
+                <>
+                    <ZeniteIcon name="sun" size={18} />
+                    <span className="texto-mobile button-icon-text">Modo Claro</span>
+                </>
             ) : (
-                <>🌙<span className="texto-mobile button-icon-text">Modo Escuro</span></>
+                <>
+                    <ZeniteIcon name="moon" size={18} />
+                    <span className="texto-mobile button-icon-text">Modo Escuro</span>
+                </>
             )}
         </button>
     );

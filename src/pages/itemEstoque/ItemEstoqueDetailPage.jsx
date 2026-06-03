@@ -100,9 +100,7 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
 
     const houveMudanca = itemAtivo && (
         itemAtivo.descricao !== formEdicao.descricao ||
-        itemAtivo.espacoId !== formEdicao.espacoId ||
-        itemAtivo.tipoUnidadeMedida != formEdicao.tipoUnidadeMedida ||
-        parseQuantity(itemAtivo.quantidade) !== parseQuantity(formEdicao.quantidade)
+        itemAtivo.tipoUnidadeMedida != formEdicao.tipoUnidadeMedida
     );
 
     const handleConfirmarEdicao = async () => {
@@ -112,7 +110,10 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
 
         const payload = criarPayloadItemEstoque({
             unidadeOrganizacionalId,
-            formData: formEdicao
+            formData: {
+                ...formEdicao,
+                quantidade: formatQuantityInput(itemAtivo.quantidade || 0)
+            }
         });
 
         try {

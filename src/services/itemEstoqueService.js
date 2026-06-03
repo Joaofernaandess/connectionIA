@@ -1,5 +1,6 @@
 import { getBaseUrl } from '../utils/apiConfig';
-import { authHeaders, jsonHeaders } from './httpHeaders';
+import { encryptedFetch } from '../utils/payloadCrypto';
+import { authHeaders } from './httpHeaders';
 
 export const listarItensEstoque = ({ token, unidadeOrganizacionalId, filtro = '', skip = 0, top = 50 }) => {
     const params = new URLSearchParams({
@@ -30,18 +31,18 @@ export const obterItemEstoque = ({ token, itemEstoqueId }) => (
 );
 
 export const criarItemEstoque = ({ token, payload }) => (
-    fetch(`${getBaseUrl()}/v1/itens-estoque`, {
+    encryptedFetch(`${getBaseUrl()}/v1/itens-estoque`, {
         method: 'POST',
-        headers: jsonHeaders(token),
-        body: JSON.stringify(payload)
+        headers: authHeaders(token),
+        payload
     })
 );
 
 export const atualizarItemEstoque = ({ token, itemEstoqueId, payload }) => (
-    fetch(`${getBaseUrl()}/v1/itens-estoque/${itemEstoqueId}`, {
+    encryptedFetch(`${getBaseUrl()}/v1/itens-estoque/${itemEstoqueId}`, {
         method: 'PUT',
-        headers: jsonHeaders(token),
-        body: JSON.stringify(payload)
+        headers: authHeaders(token),
+        payload
     })
 );
 
@@ -53,17 +54,17 @@ export const excluirItemEstoque = ({ token, itemEstoqueId }) => (
 );
 
 export const transferirItemEstoque = ({ token, itemEstoqueId, novoEspacoId, usuarioId }) => (
-    fetch(`${getBaseUrl()}/v1/itens-estoque/${itemEstoqueId}/transferir`, {
+    encryptedFetch(`${getBaseUrl()}/v1/itens-estoque/${itemEstoqueId}/transferir`, {
         method: 'PATCH',
-        headers: jsonHeaders(token),
-        body: JSON.stringify({ novoEspacoId, usuarioId })
+        headers: authHeaders(token),
+        payload: { novoEspacoId, usuarioId }
     })
 );
 
 export const movimentarItemEstoque = ({ token, itemEstoqueId, payload }) => (
-    fetch(`${getBaseUrl()}/v1/itens-estoque/${itemEstoqueId}`, {
+    encryptedFetch(`${getBaseUrl()}/v1/itens-estoque/${itemEstoqueId}`, {
         method: 'PATCH',
-        headers: jsonHeaders(token),
-        body: JSON.stringify(payload)
+        headers: authHeaders(token),
+        payload
     })
 );

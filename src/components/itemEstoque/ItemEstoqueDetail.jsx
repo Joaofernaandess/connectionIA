@@ -1,5 +1,5 @@
 import { TIPO_UNIDADE } from '../../constants/tipoUnidade';
-import { maskQuantityInput } from '../../utils/quantity';
+import ZeniteIcon from '../ZeniteIcon';
 import ExcluirItemModal from './ExcluirItemModal';
 import HistoricoMovimentacoes from './HistoricoMovimentacoes';
 import MovimentarEstoqueModal from './MovimentarEstoqueModal';
@@ -52,7 +52,7 @@ export default function ItemEstoqueDetail({
                         </div>
                         <div className="column-3 mb-1">
                             <label className={`label-sm ${fieldErrors.EspacoId ? 'error' : ''}`}>Local (Espaço)</label>
-                            <select value={formEdicao.espacoId} onChange={e => onChangeFormEdicao({ ...formEdicao, espacoId: e.target.value })} className={getInputClassName(fieldErrors.EspacoId)}>
+                            <select value={formEdicao.espacoId} className={getInputClassName(fieldErrors.EspacoId)} disabled>
                                 {espacos.map(e => <option key={e.espacoId} value={e.espacoId}>{e.nome}</option>)}
                             </select>
                             {fieldErrors.EspacoId && <small className="invalid-feedback d-block">{fieldErrors.EspacoId}</small>}
@@ -66,7 +66,7 @@ export default function ItemEstoqueDetail({
                         </div>
                         <div className="column-2 mb-1">
                             <label className="label-sm text-muted">Saldo Atual</label>
-                            <input type="text" inputMode="decimal" value={formEdicao.quantidade} onChange={e => onChangeFormEdicao({ ...formEdicao, quantidade: maskQuantityInput(e.target.value) })} className="w-full no-field-margin" />
+                            <input type="text" value={formEdicao.quantidade} className="w-full no-field-margin" readOnly />
                         </div>
                     </div>
                 </div>
@@ -78,10 +78,12 @@ export default function ItemEstoqueDetail({
 
             <div className="stock-movement-actions">
                 <button className="button button-entry button-full" onClick={() => onAbrirMovimentacao(1)}>
-                    + Entrada
+                    <ZeniteIcon name="plus" />
+                    <span className="button-icon-text">Entrada</span>
                 </button>
                 <button className="button button-exit button-full" onClick={() => onAbrirMovimentacao(2)}>
-                    - Saída
+                    <ZeniteIcon name="minus" />
+                    <span className="button-icon-text">Saída</span>
                 </button>
             </div>
 

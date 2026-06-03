@@ -1,5 +1,6 @@
 import { getBaseUrl } from '../utils/apiConfig';
-import { authHeaders, jsonHeaders } from './httpHeaders';
+import { encryptedFetch } from '../utils/payloadCrypto';
+import { authHeaders } from './httpHeaders';
 
 export const listarEspacos = ({ token, unidadeOrganizacionalId, skip = 0, top = 50 }) => (
     fetch(`${getBaseUrl()}/v1/espacos?unidadeOrganizacionalId=${unidadeOrganizacionalId}&skip=${skip}&top=${top}`, {
@@ -14,18 +15,18 @@ export const obterEspaco = ({ token, espacoId }) => (
 );
 
 export const criarEspaco = ({ token, payload }) => (
-    fetch(`${getBaseUrl()}/v1/espacos`, {
+    encryptedFetch(`${getBaseUrl()}/v1/espacos`, {
         method: 'POST',
-        headers: jsonHeaders(token),
-        body: JSON.stringify(payload)
+        headers: authHeaders(token),
+        payload
     })
 );
 
 export const atualizarEspaco = ({ token, espacoId, payload }) => (
-    fetch(`${getBaseUrl()}/v1/espacos/${espacoId}`, {
+    encryptedFetch(`${getBaseUrl()}/v1/espacos/${espacoId}`, {
         method: 'PUT',
-        headers: jsonHeaders(token),
-        body: JSON.stringify(payload)
+        headers: authHeaders(token),
+        payload
     })
 );
 

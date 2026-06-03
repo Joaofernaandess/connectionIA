@@ -7,6 +7,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import UnidadeComboBox from '../components/UnidadeComboBox';
 import { getBaseUrl } from '../utils/apiConfig';
 import { aplicarErrosCampos, extrairErro } from '../utils/apiUtils';
+import { encryptedJsonBody } from '../utils/payloadCrypto';
 
 export default function LoginPage({ onLogin, onPendingApproval }) {
     const [formData, setFormData] = useState({ username: '', senha: '', unidadeOrganizacionalId: '' });
@@ -27,7 +28,7 @@ export default function LoginPage({ onLogin, onPendingApproval }) {
             const response = await fetch(`${getBaseUrl()}/v1/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: await encryptedJsonBody(payload)
             });
 
             if (response.ok) {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getBaseUrl } from '../utils/apiConfig';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../utils/apiUtils';
+import { encryptedJsonBody } from '../utils/payloadCrypto';
 
 export const useProfileForm = ({ token, usuario }) => {
     const navigate = useNavigate();
@@ -38,7 +39,7 @@ export const useProfileForm = ({ token, usuario }) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(payload)
+                body: await encryptedJsonBody(payload)
             });
 
             if (response.ok) {

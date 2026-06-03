@@ -1,4 +1,5 @@
 import LoadingWaves from '../LoadingWaves';
+import ZeniteIcon from '../ZeniteIcon';
 
 export default function EspacoList({
     espacos,
@@ -15,7 +16,8 @@ export default function EspacoList({
             <div className="inventory-list-header">
                 <h2 className="no-margin">Gestão de Espaços</h2>
                 <button className="button inventory-list-header-action no-margin" onClick={onAbrirNovo}>
-                    + Novo espaço
+                    <ZeniteIcon name="plus" />
+                    <span className="button-icon-text">Novo espaço</span>
                 </button>
             </div>
 

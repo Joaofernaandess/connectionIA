@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MessageModal from '../components/MessageModal';
 import PasswordInput from '../components/PasswordInput';
@@ -7,33 +7,83 @@ import ThemeToggle from '../components/ThemeToggle';
 import UnidadeComboBox from '../components/UnidadeComboBox';
 import { getBaseUrl } from '../utils/apiConfig';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../utils/apiUtils';
+import { decryptEncryptedResponse, encryptedJsonBody, encryptedJsonBodyWithKey } from '../utils/payloadCrypto';
 
 export default function ForgotPasswordPage() {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [data, setData] = useState({ username: '', unidadeOrganizacionalId: '', code: '', senha: '', confirmaSenha: '', codigoAcessoId: '' });
     const [erro, setErro] = useState('');
+    const [sucesso, setSucesso] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [cooldownReenvio, setCooldownReenvio] = useState(0);
+
+    useEffect(() => {
+        if (cooldownReenvio <= 0) return undefined;
+
+        const timer = setTimeout(() => {
+            setCooldownReenvio(prev => Math.max(prev - 1, 0));
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [cooldownReenvio]);
+
+    const iniciarCooldownReenvio = () => {
+        setCooldownReenvio(120);
+    };
+
+    const formatCooldown = (seconds) => {
+        const minutos = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const segundos = (seconds % 60).toString().padStart(2, '0');
+
+        return `${minutos}:${segundos}`;
+    };
+
+    const solicitarCodigo = async ({ iniciarCooldown = false } = {}) => {
+        setErro('');
+        setSucesso('');
+        setFieldErrors({});
+
+        const res = await fetch(`${getBaseUrl()}/v1/auth/forgot`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: await encryptedJsonBody({
+                username: data.username,
+                unidadeOrganizacionalId: data.unidadeOrganizacionalId === '' ? null : data.unidadeOrganizacionalId
+            })
+        });
+
+        if (res.ok) {
+            const mensagem = await extrairMensagem(res);
+            if (mensagem) setSucesso(mensagem);
+            setData(prev => ({ ...prev, code: '' }));
+            setStep(2);
+            if (iniciarCooldown) iniciarCooldownReenvio();
+        } else if (res.status === 400) {
+            await aplicarErrosCampos(res, setFieldErrors, setErro);
+        } else {
+            setErro(await extrairErro(res));
+        }
+    };
 
     const handleForgot = async (e) => {
         e.preventDefault();
-        setErro('');
-        setFieldErrors({});
+
         try {
-            const res = await fetch(`${getBaseUrl()}/v1/auth/forgot`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: data.username,
-                    unidadeOrganizacionalId: data.unidadeOrganizacionalId === '' ? null : data.unidadeOrganizacionalId
-                })
-            });
-            if (res.ok) setStep(2);
-            else if (res.status === 400) await aplicarErrosCampos(res, setFieldErrors, setErro);
-            else setErro(await extrairErro(res));
-        } catch (error) { console.error(error); }
+            await solicitarCodigo();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleReenviarCodigo = async () => {
+        try {
+            await solicitarCodigo({ iniciarCooldown: true });
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const handleVerifyCode = async (e) => {
@@ -41,14 +91,15 @@ export default function ForgotPasswordPage() {
         setErro('');
 
         try {
+            const encryptedRequest = await encryptedJsonBodyWithKey({ code: data.code });
             const res = await fetch(`${getBaseUrl()}/v1/auth/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: data.code })
+                body: encryptedRequest.body
             });
 
             if (res.ok) {
-                const result = await res.json();
+                const result = await decryptEncryptedResponse(await res.json(), encryptedRequest.aesKey);
                 setData(prev => ({ ...prev, codigoAcessoId: result.codigoAcessoId || result.codigoResetId || '' }));
                 setStep(3);
             } else if (res.status === 400) {
@@ -70,7 +121,7 @@ export default function ForgotPasswordPage() {
             const res = await fetch(`${getBaseUrl()}/v1/auth/reset`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ codigoAcessoId: data.codigoAcessoId, senha: data.senha, confirmaSenha: data.confirmaSenha })
+                body: await encryptedJsonBody({ codigoAcessoId: data.codigoAcessoId, senha: data.senha, confirmaSenha: data.confirmaSenha })
             });
             if (res.ok) {
                 const mensagem = await extrairMensagem(res);
@@ -122,6 +173,16 @@ export default function ForgotPasswordPage() {
                                     />
                                 </div>
                                 <button type="submit" className="button w-full">Verificar</button>
+                                <button
+                                    type="button"
+                                    className="button button-outline button-full mt-1"
+                                    onClick={handleReenviarCodigo}
+                                    disabled={cooldownReenvio > 0}
+                                >
+                                    {cooldownReenvio > 0
+                                        ? `Reenviar código em ${formatCooldown(cooldownReenvio)}`
+                                        : 'Reenviar código'}
+                                </button>
                             </form>
                         )}
 
@@ -153,6 +214,15 @@ export default function ForgotPasswordPage() {
                     type="error"
                     message={erro}
                     onClose={() => setErro('')}
+                    autoClose={8000}
+                />
+            )}
+
+            {sucesso && (
+                <MessageModal
+                    type="success"
+                    message={sucesso}
+                    onClose={() => setSucesso('')}
                     autoClose={8000}
                 />
             )}

@@ -1,19 +1,22 @@
 import { formatQuantity } from '../../utils/quantity';
 import LoadingWaves from '../LoadingWaves';
+import ZeniteIcon from '../ZeniteIcon';
 
 const getHistoricoVisual = (tipo) => {
     if (tipo === 1) {
         return {
-            titulo: 'Entrada (+)',
+            titulo: 'Entrada',
+            icon: 'plus',
             cardClass: 'history-entry',
             amountClass: 'history-amount-entry',
-            valor: '+'
+            valor: ''
         };
     }
 
     if (tipo === 2) {
         return {
-            titulo: 'Saída (-)',
+            titulo: 'Saída',
+            icon: 'minus',
             cardClass: 'history-exit',
             amountClass: 'history-amount-exit',
             valor: '-'
@@ -22,6 +25,7 @@ const getHistoricoVisual = (tipo) => {
 
     return {
         titulo: 'Transferência',
+        icon: null,
         cardClass: 'history-transfer',
         amountClass: 'history-amount-transfer',
         valor: '↔'
@@ -58,6 +62,7 @@ export default function HistoricoMovimentacoes({ historico, loading }) {
                             <div className="history-card-content">
                                 <div className="history-card-info">
                                     <h4 className="history-card-title">
+                                        {visual.icon && <ZeniteIcon name={visual.icon} size={16} />}
                                         {visual.titulo}
                                     </h4>
                                     <small className="history-card-meta">
@@ -74,7 +79,14 @@ export default function HistoricoMovimentacoes({ historico, loading }) {
                                     )}
                                 </div>
                                 <div className={`history-card-amount ${visual.amountClass}`}>
-                                    {tipo === 3 ? visual.valor : `${visual.valor}${formatQuantity(qtd)}`}
+                                    {tipo === 3 ? (
+                                        visual.valor
+                                    ) : (
+                                        <>
+                                            {visual.icon && <ZeniteIcon name={visual.icon} size={14} />}
+                                            <span>{formatQuantity(qtd)}</span>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
