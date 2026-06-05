@@ -21,7 +21,7 @@ export default function App() {
 
     const handlePendingApproval = (message) => {
         setPendingMessage(message);
-        navigate('/pending-approval', { replace: true, state: { message } });
+        navigate('/waiting-approval', { replace: true, state: { message } });
     };
 
     return (

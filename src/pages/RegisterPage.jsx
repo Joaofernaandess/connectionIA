@@ -13,13 +13,11 @@ export default function RegisterPage() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ nome: '', username: '', senha: '', unidadeOrganizacionalId: '' });
     const [erro, setErro] = useState('');
-    const [sucesso, setSucesso] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErro('');
-        setSucesso('');
         setFieldErrors({});
 
         const payload = {
@@ -36,8 +34,10 @@ export default function RegisterPage() {
 
             if (response.ok) {
                 const mensagem = await extrairMensagem(response);
-                if (mensagem) setSucesso(mensagem);
-                setTimeout(() => navigate('/login'), 2000);
+                navigate('/waiting-approval', {
+                    replace: true,
+                    state: { message: mensagem }
+                });
             } else if (response.status === 400) {
                 await aplicarErrosCampos(response, setFieldErrors, setErro);
             } else {
@@ -51,9 +51,9 @@ export default function RegisterPage() {
 
     return (
         <>
-            <ThemeToggle />
             <div className="container">
                 <div className="auth-page">
+                    <ThemeToggle fixo={false} />
                     <div className="card auth-card">
                         <h2 className="auth-title">Criar Conta</h2>
                         <form onSubmit={handleSubmit} noValidate>
@@ -103,11 +103,11 @@ export default function RegisterPage() {
                 </div>
             </div>
 
-            {(erro || sucesso) && (
+            {erro && (
                 <MessageModal
-                    type={erro ? 'error' : 'success'}
-                    message={erro || sucesso}
-                    onClose={() => { setErro(''); setSucesso(''); }}
+                    type="error"
+                    message={erro}
+                    onClose={() => setErro('')}
                     autoClose={8000}
                 />
             )}

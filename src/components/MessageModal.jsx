@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-
 export default function MessageModal({
     type,
     title,
@@ -9,37 +7,11 @@ export default function MessageModal({
     autoClose = 8000,
     autoCloseMs,
 }) {
-    const [progress, setProgress] = useState(0);
     const isError = type === 'error';
     const closeDelay = autoCloseMs ?? autoClose;
+    const isStandardDelay = closeDelay === 8000;
     const modalTitle = title || '';
     const actionLabel = buttonLabel || (isError ? 'Fechar' : 'OK');
-
-    useEffect(() => {
-        if (!message) return;
-
-        const total = closeDelay;
-        const step = 100;
-        const intervalMs = total / step;
-
-        setProgress(100);
-
-        const intervalID = setInterval(() => {
-            setProgress(prev => {
-                const next = prev - 1;
-                return next < 0 ? 0 : next;
-            });
-        }, intervalMs);
-
-        const timeoutID = setTimeout(() => {
-            onClose();
-        }, total);
-
-        return () => {
-            clearInterval(intervalID);
-            clearTimeout(timeoutID);
-        };
-    }, [message, closeDelay, onClose]);
 
     if (!message) return null;
 
@@ -56,12 +28,19 @@ export default function MessageModal({
                     {message}
                 </p>
 
-                <progress
+                <div
                     className={`message-progress ${isError ? 'message-progress-error' : 'message-progress-success'}`}
-                    value={progress}
-                    max="100"
+                    role="progressbar"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
                     aria-hidden="true"
-                />
+                >
+                    <span
+                        key={`${type}-${message}`}
+                        className={`message-progress-bar ${isStandardDelay ? 'message-progress-bar-standard' : ''}`}
+                        onAnimationEnd={onClose}
+                    />
+                </div>
 
                 <button
                     type="button"

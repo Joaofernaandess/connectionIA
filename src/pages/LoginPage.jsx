@@ -54,42 +54,44 @@ export default function LoginPage({ onLogin, onPendingApproval }) {
 
     return (
         <>
-            <ThemeToggle />
-            <div className="auth-page">
-                <div className="card auth-card">
-                    <h2 className="auth-title">Login</h2>
-                    <form onSubmit={handleSubmit} noValidate>
+            <div className="container">
+                <div className="auth-page">
+                    <ThemeToggle fixo={false} />
+                    <div className="card auth-card">
+                        <h2 className="auth-title">Login</h2>
+                        <form onSubmit={handleSubmit} noValidate>
 
-                        <PhoneInput
-                            value={formData.username}
-                            onChange={e => setFormData({ ...formData, username: e.target.value })}
-                            error={!!fieldErrors.Username}
-                            errorMessage={fieldErrors.Username}
-                        />
+                            <PhoneInput
+                                value={formData.username}
+                                onChange={e => setFormData({ ...formData, username: e.target.value })}
+                                error={!!fieldErrors.Username}
+                                errorMessage={fieldErrors.Username}
+                            />
 
-                        <PasswordInput
-                            label="Senha"
-                            placeholder="******"
-                            value={formData.senha}
-                            onChange={e => setFormData({ ...formData, senha: e.target.value })}
-                            error={!!fieldErrors.Senha}
-                            errorMessage={fieldErrors.Senha}
-                        />
+                            <PasswordInput
+                                label="Senha"
+                                placeholder="******"
+                                value={formData.senha}
+                                onChange={e => setFormData({ ...formData, senha: e.target.value })}
+                                error={!!fieldErrors.Senha}
+                                errorMessage={fieldErrors.Senha}
+                            />
 
-                        <UnidadeComboBox
-                            value={formData.unidadeOrganizacionalId}
-                            onChange={val => setFormData({ ...formData, unidadeOrganizacionalId: val })}
-                            error={!!fieldErrors.UnidadeOrganizacionalId}
-                            errorMessage={fieldErrors.UnidadeOrganizacionalId}
-                        />
+                            <UnidadeComboBox
+                                value={formData.unidadeOrganizacionalId}
+                                onChange={val => setFormData({ ...formData, unidadeOrganizacionalId: val })}
+                                error={!!fieldErrors.UnidadeOrganizacionalId}
+                                errorMessage={fieldErrors.UnidadeOrganizacionalId}
+                            />
 
-                        <button type="submit" className="button button-full mt-1">Entrar</button>
+                            <button type="submit" className="button button-full mt-1">Entrar</button>
 
-                        <div className="auth-link-row">
-                            <Link className="link-action" to="/register">Registrar</Link>
-                            <Link className="link-action" to="/forgot-password">Esqueci a senha</Link>
-                        </div>
-                    </form>
+                            <div className="auth-link-row">
+                                <Link className="link-action" to="/register">Registrar</Link>
+                                <Link className="link-action" to="/forgot-password">Esqueci a senha</Link>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 

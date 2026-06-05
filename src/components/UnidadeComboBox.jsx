@@ -40,6 +40,7 @@ export default function UnidadeComboBox({ value, onChange, error, errorMessage }
             formatCnpj(cnpj).toLowerCase().includes(termo)
         );
     });
+    const semResultados = isOpen && search.trim() && filteredUnidades.length === 0;
 
     const selected = unidadesSeguras.find(u => u.unidadeOrganizacionalId === value);
     const displayValue = isOpen ? search : getNomeExibicao(selected);
@@ -58,6 +59,8 @@ export default function UnidadeComboBox({ value, onChange, error, errorMessage }
             e.preventDefault();
             if (!isOpen) {
                 setIsOpen(true);
+            } else if (filteredUnidades.length === 0) {
+                setHighlightedIndex(-1);
             } else {
                 setHighlightedIndex(prev => (prev < filteredUnidades.length - 1 ? prev + 1 : prev));
             }
@@ -138,6 +141,11 @@ export default function UnidadeComboBox({ value, onChange, error, errorMessage }
                             </div>
                         </li>
                     ))}
+                    {semResultados && (
+                        <li className="zf-combobox-empty" aria-live="polite">
+                            Não encontrado
+                        </li>
+                    )}
                 </ul>
             </div>
             {error && <small className="invalid-feedback d-block">{errorMessage}</small>}
