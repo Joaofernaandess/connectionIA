@@ -16,6 +16,8 @@ export default function ResetPasswordPage() {
     const [fieldErrors, setFieldErrors] = useState({});
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const senhaError = fieldErrors.Senha || fieldErrors.senha || '';
+    const confirmaSenhaError = fieldErrors.ConfirmaSenha || fieldErrors.confirmaSenha || fieldErrors.Confirmasenha || fieldErrors.confirmasenha || '';
 
     useEffect(() => {
         if (!codigoAcessoId) {
@@ -62,15 +64,15 @@ export default function ResetPasswordPage() {
                                 label="Nova Senha"
                                 value={data.senha}
                                 onChange={e => setData({ ...data, senha: e.target.value })}
-                                error={!!fieldErrors.Senha}
-                                errorMessage={fieldErrors.Senha}
+                                error={!!senhaError}
+                                errorMessage={senhaError}
                             />
                             <PasswordInput
                                 label="Confirmar Nova Senha"
                                 value={data.confirmaSenha}
                                 onChange={e => setData({ ...data, confirmaSenha: e.target.value })}
-                                error={!!fieldErrors.ConfirmaSenha}
-                                errorMessage={fieldErrors.ConfirmaSenha}
+                                error={!!confirmaSenhaError}
+                                errorMessage={confirmaSenhaError}
                             />
                             <button type="submit" className="button button-full mt-1">Redefinir Senha</button>
                         </form>

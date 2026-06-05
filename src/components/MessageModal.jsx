@@ -16,7 +16,7 @@ export default function MessageModal({
     if (!message) return null;
 
     return (
-        <div className="message-overlay">
+        <div className="message-overlay message-overlay-dim">
             <div className="card message-card">
                 {modalTitle && (
                     <h2 className={isError ? 'message-title-error' : 'message-title-success'}>
@@ -44,7 +44,7 @@ export default function MessageModal({
 
                 <button
                     type="button"
-                    className="button button-full"
+                    className={`button button-full ${isError ? 'button-outline-error' : 'button-outline-success'}`}
                     onClick={onClose}
                 >
                     {actionLabel}

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { listarEspacos } from '../../services/espacoService';
 import { obterPizzaDashboard } from '../../services/relatorioService';
 import PizzaDashboardChart from '../../components/charts/PizzaDashboardChart';
+
 
 const dashboardThemeStyle = `
   .totais-scroll {
@@ -48,44 +49,13 @@ const dashboardThemeStyle = `
   html[data-theme='light'] .totais-scroll::-webkit-scrollbar-thumb:hover {
     background-color: #0d47a1;
   }
-
-  .dashboard-select {
-    width: 100%;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    border-radius: 10px;
-    padding: 0.9rem 1rem;
-    font-size: 1rem;
-    outline: none;
-  }
-
-  html[data-theme='dark'] .dashboard-select {
-    background-color: #0d2a5c;
-    color: #f8fafc;
-    border: 1px solid #d4a017;
-  }
-
-  html[data-theme='light'] .dashboard-select {
-    background-color: #ffffff;
-    color: #111827;
-    border: 1px solid #1565c0;
-  }
-
-  html[data-theme='dark'] .dashboard-select option {
-    background-color: #0b2550;
-    color: #f8fafc;
-  }
-
-  html[data-theme='light'] .dashboard-select option {
-    background-color: #ffffff;
-    color: #111827;
-  }
 `;
+
 
 function getCurrentTheme() {
   return document.documentElement.getAttribute('data-theme') || 'dark';
 }
+
 
 export default function DashboardPage({ token, unidadeOrganizacionalId }) {
   const [espacos, setEspacos] = useState([]);
@@ -93,7 +63,14 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
   const [pizzaData, setPizzaData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState(getCurrentTheme());
+  const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
 
+  const dropdownAnchorRef = useRef(null);
+  const dropdownWrapperRef = useRef(null);
+
+
+  // Injeta estilos de scrollbar
   useEffect(() => {
     const existing = document.getElementById('dashboard-theme-style');
     if (!existing) {
@@ -104,28 +81,23 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
     }
   }, []);
 
+
+  // Observa mudança de tema
   useEffect(() => {
-    const onThemeCheck = () => {
-      setTheme(getCurrentTheme());
-    };
-
+    const onThemeCheck = () => setTheme(getCurrentTheme());
     onThemeCheck();
-
-    const observer = new MutationObserver(() => {
-      onThemeCheck();
-    });
-
+    const observer = new MutationObserver(onThemeCheck);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['data-theme'],
     });
-
     return () => observer.disconnect();
   }, []);
 
+
+  // Carrega lista de espaços
   useEffect(() => {
     if (!token || !unidadeOrganizacionalId) return;
-
     listarEspacos({ token, unidadeOrganizacionalId, top: 200 })
       .then(async (res) => {
         if (!res.ok) throw new Error('Erro ao listar espaços');
@@ -138,30 +110,41 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
       });
   }, [token, unidadeOrganizacionalId]);
 
+
+  // Carrega dados do gráfico pizza
   useEffect(() => {
-  if (!token || !unidadeOrganizacionalId) return;
-
-  setLoading(true);
-
-  obterPizzaDashboard({
-    token,
-    unidadeOrganizacionalId,
-    espacoId: espacoId || undefined,
-  })
-    .then(async (res) => {
-      if (!res.ok) throw new Error('Erro ao carregar dashboard');
-      const data = await res.json();
-      console.log('pizzaData =>', data);
-      setPizzaData(Array.isArray(data) ? data : []);
+    if (!token || !unidadeOrganizacionalId) return;
+    setLoading(true);
+    obterPizzaDashboard({
+      token,
+      unidadeOrganizacionalId,
+      espacoId: espacoId || undefined,
     })
-    .catch((err) => {
-      console.error(err);
-      setPizzaData([]);
-    })
-    .finally(() => {
-      setLoading(false);
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Erro ao carregar dashboard');
+        const data = await res.json();
+        console.log('pizzaData =>', data);
+        setPizzaData(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error(err);
+        setPizzaData([]);
+      })
+      .finally(() => setLoading(false));
+  }, [token, unidadeOrganizacionalId, espacoId]);
+
+
+  // Calcula posição do dropdown (position: fixed)
+  useEffect(() => {
+    if (!isOpen || !dropdownAnchorRef.current) return;
+    const rect = dropdownAnchorRef.current.getBoundingClientRect();
+    setDropdownPos({
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
     });
-}, [token, unidadeOrganizacionalId, espacoId]);
+  }, [isOpen]);
+
 
   const espacoSelecionado = useMemo(() => {
     return espacos.find((e) => e.espacoId === espacoId) ?? null;
@@ -175,6 +158,7 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
   const pizzaDataOrdenada = useMemo(() => {
     return [...pizzaData].sort((a, b) => Number(b.value || 0) - Number(a.value || 0));
   }, [pizzaData]);
+
 
   const isLight = theme === 'light';
 
@@ -195,6 +179,7 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
     fontWeight: 500,
   };
 
+
   return (
     <div className="dashboard-page" style={{ width: '100%' }}>
       <div
@@ -209,6 +194,8 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
           margin: '0 auto',
         }}
       >
+
+        {/* ===== CARD GRÁFICO PIZZA ===== */}
         <section
           className="card inventory-card inventory-card-surface"
           style={{
@@ -221,19 +208,19 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
         >
           <h3
             className="inventory-card-title"
-            style={{
-              ...cardTitleStyle,
-              textAlign: 'center',
-              width: '100%',
-            }}
+            style={{ ...cardTitleStyle, textAlign: 'center', width: '100%' }}
           >
             Visão geral do estoque
           </h3>
 
-          {loading && <p style={bodyTextStyle}>Carregando dados do dashboard...</p>}
+          {loading && (
+            <p style={{ ...bodyTextStyle, textAlign: 'center' }}>
+              Carregando dados do dashboard...
+            </p>
+          )}
 
           {!loading && pizzaData.length === 0 && (
-            <p style={bodyTextStyle}>
+            <p style={{ ...bodyTextStyle, textAlign: 'center' }}>
               Não há dados para exibir com o filtro selecionado.
             </p>
           )}
@@ -243,6 +230,8 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
           )}
         </section>
 
+
+        {/* ===== COLUNA DIREITA ===== */}
         <section
           style={{
             flex: '1 1 38%',
@@ -252,36 +241,158 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
             gap: '1rem',
           }}
         >
+
+          {/* ===== CARD FILTRO ESPAÇO ===== */}
           <div
             className="card inventory-card inventory-card-surface"
             style={{ padding: '1.25rem' }}
           >
             <h3
               className="inventory-card-title"
-              style={{
-                ...cardTitleStyle,
-                whiteSpace: 'nowrap',
-                overflow: 'visible',
-              }}
+              style={{ ...cardTitleStyle, whiteSpace: 'nowrap', overflow: 'visible' }}
             >
               Espaço
             </h3>
 
-            <select
-              id="espaco"
-              value={espacoId}
-              onChange={(e) => setEspacoId(e.target.value)}
-              className="dashboard-select"
+            {/*
+              Wrapper com tabIndex + onBlur para fechar o dropdown
+              quando o foco sair completamente do componente.
+              Não depende de nenhum evento global no document.
+            */}
+            <div
+              ref={dropdownWrapperRef}
+              tabIndex={-1}
+              onBlur={(e) => {
+                // Só fecha se o foco saiu do wrapper E da lista (que está em fixed)
+                if (
+                  !e.currentTarget.contains(e.relatedTarget) &&
+                  !dropdownAnchorRef.current?.contains(e.relatedTarget)
+                ) {
+                  setIsOpen(false);
+                }
+              }}
+              style={{ outline: 'none' }}
             >
-              <option value="">Todos os espaços</option>
-              {espacos.map((e) => (
-                <option key={e.espacoId} value={e.espacoId}>
-                  {e.nome}
-                </option>
-              ))}
-            </select>
-          </div>
 
+              {/* Campo visível */}
+              <div
+                ref={dropdownAnchorRef}
+                onClick={() => setIsOpen((prev) => !prev)}
+                style={{
+                  width: '100%',
+                  borderRadius: '10px',
+                  padding: '0.9rem 2.8rem 0.9rem 1rem',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  userSelect: 'none',
+                  backgroundColor: isLight ? '#ffffff' : '#0d2a5c',
+                  color: isLight ? '#111827' : '#f8fafc',
+                  border: `1px solid ${isLight ? '#1565c0' : '#d4a017'}`,
+                  boxSizing: 'border-box',
+                }}
+              >
+                <span>
+                  {espacoId
+                    ? espacos.find((e) => e.espacoId === espacoId)?.nome ?? 'Todos os espaços'
+                    : 'Todos os espaços'}
+                </span>
+
+                {/* Seta que gira */}
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    flexShrink: 0,
+                    transition: 'transform 0.2s ease',
+                    transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    color: isLight ? '#1565c0' : '#d4a017',
+                  }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+
+              {/* Lista — position:fixed para não ser cortada, onMouseDown previne blur antes do click */}
+              {isOpen && (
+                <ul
+                  onMouseDown={(e) => e.preventDefault()}
+                  style={{
+                    position: 'fixed',
+                    top: dropdownPos.top,
+                    left: dropdownPos.left,
+                    width: dropdownPos.width,
+                    zIndex: 9999,
+                    margin: 0,
+                    padding: '0.25rem 0',
+                    listStyle: 'none',
+                    borderRadius: '10px',
+                    border: `1px solid ${isLight ? '#1565c0' : '#d4a017'}`,
+                    backgroundColor: isLight ? '#ffffff' : '#0b2550',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+                    maxHeight: '220px',
+                    overflowY: 'auto',
+                  }}
+                >
+                  <li
+                    onClick={() => { setEspacoId(''); setIsOpen(false); }}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      cursor: 'pointer',
+                      color: isLight ? '#111827' : '#f8fafc',
+                      backgroundColor: !espacoId
+                        ? isLight ? '#e8f0fe' : '#1a3a7c'
+                        : 'transparent',
+                    }}
+                  >
+                    Todos os espaços
+                  </li>
+
+                  {espacos.length === 0 && (
+                    <li
+                      style={{
+                        padding: '0.75rem 1rem',
+                        color: isLight ? '#9ca3af' : '#6b7280',
+                        cursor: 'default',
+                        fontStyle: 'italic',
+                      }}
+                    >
+                      Nenhum espaço cadastrado
+                    </li>
+                  )}
+
+                  {espacos.map((e) => (
+                    <li
+                      key={e.espacoId}
+                      onClick={() => { setEspacoId(e.espacoId); setIsOpen(false); }}
+                      style={{
+                        padding: '0.75rem 1rem',
+                        cursor: 'pointer',
+                        color: isLight ? '#111827' : '#f8fafc',
+                        backgroundColor: espacoId === e.espacoId
+                          ? isLight ? '#e8f0fe' : '#1a3a7c'
+                          : 'transparent',
+                      }}
+                    >
+                      {e.nome}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+            </div>{/* fecha wrapper com tabIndex */}
+          </div>{/* fecha card Espaço */}
+
+
+          {/* ===== CARD TOTAIS ===== */}
           <div
             className="card inventory-card inventory-card-surface"
             style={{
@@ -295,6 +406,7 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
               className="inventory-card-title"
               style={{
                 ...cardTitleStyle,
+                textAlign: 'center',
                 whiteSpace: 'nowrap',
                 overflow: 'visible',
                 flexShrink: 0,
@@ -303,10 +415,16 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
               {espacoId ? 'Total do espaço' : 'Totais por espaço'}
             </h3>
 
-            {loading && <p style={bodyTextStyle}>Carregando totais...</p>}
+            {loading && (
+              <p style={{ ...bodyTextStyle, textAlign: 'center' }}>
+                Carregando totais...
+              </p>
+            )}
 
             {!loading && pizzaData.length === 0 && (
-              <p style={bodyTextStyle}>Sem dados para exibir.</p>
+              <p style={{ ...bodyTextStyle, textAlign: 'center' }}>
+                Sem dados para exibir.
+              </p>
             )}
 
             {!loading && !espacoId && pizzaData.length > 0 && (
@@ -319,13 +437,7 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
                   paddingRight: '0.5rem',
                 }}
               >
-                <ul
-                  style={{
-                    listStyle: 'none',
-                    padding: 0,
-                    margin: 0,
-                  }}
-                >
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                   {pizzaDataOrdenada.map((item, index) => (
                     <li
                       key={`${item.label}-${index}`}
@@ -351,7 +463,6 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
                       >
                         {item.label}
                       </span>
-
                       <span
                         style={{
                           ...quantityTextStyle,
@@ -390,7 +501,8 @@ export default function DashboardPage({ token, unidadeOrganizacionalId }) {
                 </p>
               </div>
             )}
-          </div>
+          </div>{/* fecha card Totais */}
+
         </section>
       </div>
     </div>

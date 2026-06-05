@@ -2,6 +2,7 @@ import CircleMinus from 'lucide-react/dist/esm/icons/circle-minus.mjs';
 import CirclePlus from 'lucide-react/dist/esm/icons/circle-plus.mjs';
 import Menu from 'lucide-react/dist/esm/icons/menu.mjs';
 import Moon from 'lucide-react/dist/esm/icons/moon.mjs';
+import Rocket from 'lucide-react/dist/esm/icons/rocket.mjs';
 import Sun from 'lucide-react/dist/esm/icons/sun.mjs';
 import Trash2 from 'lucide-react/dist/esm/icons/trash-2.mjs';
 
@@ -10,6 +11,7 @@ const ICONS = {
     moon: Moon,
     minus: CircleMinus,
     plus: CirclePlus,
+    rocket: Rocket,
     sun: Sun,
     trash: Trash2
 };
