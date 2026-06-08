@@ -16,7 +16,7 @@ export default function ValidarUsuariosView({ token }) {
         setErro('');
         setLoading(true);
         try {
-            const response = await fetch(`${getBaseUrl()}/v1/usuarios?valido=false&top=1000`, {
+            const response = await fetch(`${getBaseUrl()}/v1/usuarios?cadastroCompleto=false&top=1000`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {

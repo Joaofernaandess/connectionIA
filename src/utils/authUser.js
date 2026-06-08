@@ -19,6 +19,8 @@ export const getUserFromToken = (token) => {
         username: decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decoded.unique_name || '',
         unidadeOrganizacionalId: decoded.UnidadeOrganizacionalId || '',
         nome: decoded.Nome || decoded.nome || '',
+        cadastroCompleto: decoded.CadastroCompleto === 'True' || decoded.CadastroCompleto === true,
+        jornadaUsuario: decoded.JornadaUsuario || '',
         isAdmin: role === 'Admin'
     };
 };

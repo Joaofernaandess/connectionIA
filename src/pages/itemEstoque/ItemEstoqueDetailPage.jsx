@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import LoadingWaves from '../../components/LoadingWaves';
 import MessageModal from '../../components/MessageModal';
 import ItemEstoqueDetail from '../../components/itemEstoque/ItemEstoqueDetail';
@@ -21,7 +21,11 @@ import { formatQuantityInput, parseQuantity } from '../../utils/quantity';
 
 export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, usuarioId }) {
     const navigate = useNavigate();
+    const location = useLocation();
     const { itemEstoqueId } = useParams();
+    const mode = new URLSearchParams(location.search).get('secao') === 'historico' ? 'historico' : 'editar';
+    const espacoOrigemId = location.state?.espacoOrigemId || '';
+    const rotaRetorno = espacoOrigemId ? `/espacos/${espacoOrigemId}/itens` : '/itens-estoque';
 
     const [itemAtivo, setItemAtivo] = useState(null);
     const [espacos, setEspacos] = useState([]);
@@ -77,7 +81,6 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
                     tipoUnidadeMedida: item.tipoUnidadeMedida || 1,
                     quantidade: formatQuantityInput(item.quantidade || 0)
                 });
-                carregarHistorico();
             } else {
                 const mensagem = await extrairErro(!responseItem.ok ? responseItem : responseEspacos);
                 if (mensagem) setErro(mensagem);
@@ -87,7 +90,7 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
         } finally {
             setLoading(false);
         }
-    }, [token, itemEstoqueId, unidadeOrganizacionalId, carregarHistorico]);
+    }, [token, itemEstoqueId, unidadeOrganizacionalId]);
 
     useEffect(() => {
         if (!itemEstoqueId) {
@@ -97,6 +100,12 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
 
         carregarDados();
     }, [carregarDados, itemEstoqueId, navigate]);
+
+    useEffect(() => {
+        if (mode !== 'historico') return;
+
+        carregarHistorico();
+    }, [carregarHistorico, mode]);
 
     const houveMudanca = itemAtivo && (
         itemAtivo.descricao !== formEdicao.descricao ||
@@ -121,8 +130,8 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
 
             if (response.ok) {
                 const mensagem = await extrairMensagem(response);
-                if (mensagem) setSucesso(mensagem);
                 setItemAtivo({ ...itemAtivo, ...payload });
+                navigate(rotaRetorno, { replace: true, state: { sucesso: mensagem } });
             } else if (response.status === 400) {
                 await aplicarErrosCampos(response, setFieldErrors, setErro);
             } else {
@@ -144,7 +153,7 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
             if (response.ok) {
                 const mensagem = await extrairMensagem(response);
                 setShowDeleteModal(false);
-                navigate('/itens-estoque', { replace: true, state: { sucesso: mensagem } });
+                navigate(rotaRetorno, { replace: true, state: { sucesso: mensagem } });
             } else {
                 const mensagem = await extrairErro(response);
                 setErro(mensagem);
@@ -251,6 +260,7 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
             houveMudanca={houveMudanca}
             itemAtivo={itemAtivo}
             loadingHistorico={loadingHistorico}
+            mode={mode}
             movimentacaoData={movimentacaoData}
             novoEspacoId={novoEspacoId}
             onAbrirMovimentacao={abrirMovimentacao}
@@ -269,7 +279,7 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
             }}
             onSubmitMovimentar={handleMovimentar}
             onSubmitTransferir={handleTransferir}
-            onVoltar={() => navigate('/itens-estoque')}
+            onVoltar={() => navigate(rotaRetorno)}
             showDeleteModal={showDeleteModal}
             showMovimentarModal={showMovimentarModal}
             showTransferirModal={showTransferirModal}

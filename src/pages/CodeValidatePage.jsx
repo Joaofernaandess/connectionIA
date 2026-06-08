@@ -4,12 +4,14 @@ import MessageModal from '../components/MessageModal';
 import ThemeToggle from '../components/ThemeToggle';
 import { getBaseUrl } from '../utils/apiConfig';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../utils/apiUtils';
+import { isCodeValidateJourney, isWaitingApprovalJourney } from '../utils/jornadaUsuario';
 import { decryptEncryptedResponse, encryptedJsonBody, encryptedJsonBodyWithKey } from '../utils/payloadCrypto';
 
 export default function CodeValidatePage() {
     const navigate = useNavigate();
     const location = useLocation();
     const recoveryData = location.state || {};
+    const isCadastro = isCodeValidateJourney(recoveryData.jornadaUsuario);
     const [code, setCode] = useState('');
     const [erro, setErro] = useState('');
     const [sucesso, setSucesso] = useState(recoveryData.mensagem || '');
@@ -19,9 +21,9 @@ export default function CodeValidatePage() {
 
     useEffect(() => {
         if (!recoveryData.username || !recoveryData.unidadeOrganizacionalId) {
-            navigate('/forgot-password', { replace: true });
+            navigate(isCadastro ? '/login' : '/forgot-password', { replace: true });
         }
-    }, [navigate, recoveryData.unidadeOrganizacionalId, recoveryData.username]);
+    }, [isCadastro, navigate, recoveryData.unidadeOrganizacionalId, recoveryData.username]);
 
     useEffect(() => {
         if (cooldownReenvio <= 0) return undefined;
@@ -50,7 +52,11 @@ export default function CodeValidatePage() {
         setFieldErrors({});
 
         try {
-            const encryptedRequest = await encryptedJsonBodyWithKey({ code });
+            const encryptedRequest = await encryptedJsonBodyWithKey({
+                code,
+                username: recoveryData.username,
+                unidadeOrganizacionalId: recoveryData.unidadeOrganizacionalId
+            });
             const res = await fetch(`${getBaseUrl()}/v1/auth/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -59,9 +65,26 @@ export default function CodeValidatePage() {
 
             if (res.ok) {
                 const result = await decryptEncryptedResponse(await res.json(), encryptedRequest.aesKey);
+                const message = result.message || result.Message || '';
+                const jornadaUsuario = result.jornadaUsuario || result.JornadaUsuario;
+                const codigoAcessoId =
+                    result.codigoAcessoId ||
+                    result.codigoResetId ||
+                    result.CodigoAcessoId ||
+                    result.CodigoResetId ||
+                    '';
+
+                if (isWaitingApprovalJourney(jornadaUsuario)) {
+                    navigate('/waiting-approval', {
+                        replace: true,
+                        state: { message }
+                    });
+                    return;
+                }
+
                 navigate('/reset-password', {
                     state: {
-                        codigoAcessoId: result.codigoAcessoId || result.codigoResetId || ''
+                        codigoAcessoId
                     }
                 });
             } else if (res.status === 400) {
@@ -80,7 +103,7 @@ export default function CodeValidatePage() {
         setFieldErrors({});
 
         try {
-            const res = await fetch(`${getBaseUrl()}/v1/auth/forgot`, {
+            const res = await fetch(`${getBaseUrl()}${isCadastro ? '/v1/auth/registration-code' : '/v1/auth/forgot'}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: await encryptedJsonBody({
@@ -134,7 +157,7 @@ export default function CodeValidatePage() {
                                     ? `Reenviar código em ${formatCooldown(cooldownReenvio)}`
                                     : 'Reenviar código'}
                             </button>
-                            <button type="button" className="button button-outline button-full mt-1" onClick={() => navigate('/forgot-password')}>Voltar</button>
+                            <button type="button" className="button button-outline button-full mt-1" onClick={() => navigate(isCadastro ? '/login' : '/forgot-password')}>Voltar</button>
                         </form>
                     </div>
                 </div>

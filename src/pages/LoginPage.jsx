@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import MessageModal from '../components/MessageModal';
 import PasswordInput from '../components/PasswordInput';
 import PhoneInput from '../components/PhoneInput';
@@ -7,9 +7,11 @@ import ThemeToggle from '../components/ThemeToggle';
 import UnidadeComboBox from '../components/UnidadeComboBox';
 import { getBaseUrl } from '../utils/apiConfig';
 import { aplicarErrosCampos, extrairErro } from '../utils/apiUtils';
+import { isCodeValidateJourney, isWaitingApprovalJourney } from '../utils/jornadaUsuario';
 import { encryptedJsonBody } from '../utils/payloadCrypto';
 
 export default function LoginPage({ onLogin, onPendingApproval }) {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({ username: '', senha: '', unidadeOrganizacionalId: '' });
     const [erro, setErro] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
@@ -33,7 +35,29 @@ export default function LoginPage({ onLogin, onPendingApproval }) {
 
             if (response.ok) {
                 const data = await response.json();
-                onLogin(data.token);
+                if (isCodeValidateJourney(data.jornadaUsuario)) {
+                    navigate('/code-validate', {
+                        replace: true,
+                        state: {
+                            username: formData.username,
+                            unidadeOrganizacionalId: formData.unidadeOrganizacionalId,
+                            jornadaUsuario: data.jornadaUsuario,
+                            mensagem: data.message
+                        }
+                    });
+                    return;
+                }
+
+                if (isWaitingApprovalJourney(data.jornadaUsuario)) {
+                    if (onPendingApproval) {
+                        onPendingApproval(data.message);
+                    } else {
+                        navigate('/waiting-approval', { replace: true, state: { message: data.message } });
+                    }
+                    return;
+                }
+
+                if (data.token) onLogin(data.token);
             } else if (response.status === 400) {
                 await aplicarErrosCampos(response, setFieldErrors, setErro);
             } else if (response.status === 403) {
@@ -57,7 +81,7 @@ export default function LoginPage({ onLogin, onPendingApproval }) {
             <div className="container">
                 <div className="auth-page">
                     <ThemeToggle fixo={false} />
-                    <div className="card auth-card">
+                    <div className="card auth-card auth-card-fixed">
                         <h2 className="auth-title">Login</h2>
                         <form onSubmit={handleSubmit} noValidate>
 

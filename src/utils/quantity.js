@@ -20,6 +20,15 @@ export function maskQuantityInput(value) {
     return clean;
 }
 
+export function maskQuantityInputFixed3(value) {
+    const digits = String(value ?? '').replace(/\D/g, '');
+    const padded = digits.padStart(4, '0');
+    const integerPart = padded.slice(0, -3).replace(/^0+(?=\d)/, '') || '0';
+    const decimalPart = padded.slice(-3);
+
+    return `${integerPart},${decimalPart}`;
+}
+
 export function parseQuantity(value) {
     if (typeof value === 'number') return value;
     const normalized = String(value ?? '')

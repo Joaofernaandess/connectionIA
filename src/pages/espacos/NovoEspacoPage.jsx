@@ -36,17 +36,17 @@ export default function NovoEspacoPage({ token, unidadeOrganizacionalId }) {
     };
 
     return (
-        <div className="detail-view w-full">
+        <div className="detail-view detail-form-view w-full">
             <div className="detail-heading">
                 <h2 className="no-margin">Novo Espaço</h2>
             </div>
 
-            <form onSubmit={handleSubmit} noValidate>
-                <div className="card detail-card">
+            <form className="detail-form-layout" onSubmit={handleSubmit} noValidate>
+                <div className="card detail-card detail-form-scroll-card">
                     <div className="detail-card-body">
                         <div className="row">
                             <div className="column-6 mb-1">
-                                <label className={`label-sm ${fieldErrors.Nome ? 'error' : ''}`}>Nome do Espaço</label>
+                                <label className="label-sm">Nome</label>
                                 <input
                                     type="text"
                                     value={formData.nome}
@@ -56,13 +56,13 @@ export default function NovoEspacoPage({ token, unidadeOrganizacionalId }) {
                                 {fieldErrors.Nome && <small className="invalid-feedback d-block">{fieldErrors.Nome}</small>}
                             </div>
                             <div className="column-6 mb-1">
-                                <label className={`label-sm ${fieldErrors.Descricao ? 'error' : ''}`}>Descrição</label>
-                                <input
-                                    type="text"
+                                <label className="label-sm">Descrição</label>
+                                <textarea
+                                    rows={2}
                                     value={formData.descricao}
                                     onChange={e => setFormData({ ...formData, descricao: e.target.value })}
                                     className={`w-full no-field-margin ${fieldErrors.Descricao ? 'is-invalid' : ''}`}
-                                />
+                                ></textarea>
                                 {fieldErrors.Descricao && <small className="invalid-feedback d-block">{fieldErrors.Descricao}</small>}
                             </div>
                         </div>
