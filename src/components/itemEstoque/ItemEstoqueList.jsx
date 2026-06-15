@@ -1,15 +1,19 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { TIPO_UNIDADE, getTipoUnidadeSigla } from '../../constants/tipoUnidade';
-import { formatQuantity } from '../../utils/quantity';
+import { formatQuantity, formatQuantityMasked } from '../../utils/quantity';
 import LoadingWaves from '../LoadingWaves';
 import ZeniteIcon from '../ZeniteIcon';
+
 
 const TIPOS_UNIDADE_FILTRO = Object.entries(TIPO_UNIDADE).map(([value, label]) => ({
     value: Number(value),
     label
 }));
+const TIPO_UNIDADE_LITROS = 1;
+
 
 const getItemDate = (item) => item.dataCadastro || item.dataCriacao || item.criadoEm || item.createdAt || item.dataHoraCadastro;
+
 
 const formatItemDate = (item) => {
     const rawDate = getItemDate(item);
@@ -27,6 +31,7 @@ const formatItemDate = (item) => {
     }).format(date);
 };
 
+
 export default function ItemEstoqueList({
     getNomeEspaco,
     itens,
@@ -41,34 +46,68 @@ export default function ItemEstoqueList({
     excluindoItemId,
     messageModal
 }) {
-    const [tipoUnidadeSelecionada, setTipoUnidadeSelecionada] = useState('');
+    const [tipoUnidadeSelecionada, setTipoUnidadeSelecionada] = useState(TIPO_UNIDADE_LITROS);
     const [menuAbertoId, setMenuAbertoId] = useState(null);
+    const [menuDirection, setMenuDirection] = useState('down');
+    const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 220, triggerLeft: 0, triggerWidth: 0, triggerBottom: 0 });
+    const menuTriggerRefs = useRef({});
+
+
+    useEffect(() => {
+        if (!menuAbertoId) return;
+
+        const fecharMenuAoClicarFora = (event) => {
+            if (
+                !event.target.closest('.space-item-management-menu') &&
+                !event.target.closest('.space-item-actions-menu')
+            ) {
+                setMenuAbertoId(null);
+            }
+        };
+
+        document.addEventListener('pointerdown', fecharMenuAoClicarFora);
+        return () => document.removeEventListener('pointerdown', fecharMenuAoClicarFora);
+    }, [menuAbertoId]);
+
 
     const itensFiltrados = useMemo(() => {
         if (!tipoUnidadeSelecionada) return itens;
-
         return itens.filter(item => Number(item.tipoUnidadeMedida) === Number(tipoUnidadeSelecionada));
     }, [itens, tipoUnidadeSelecionada]);
 
+
     const totalFiltrado = useMemo(() => {
         if (!tipoUnidadeSelecionada) return itensFiltrados.length;
-
         return itensFiltrados.reduce((total, item) => total + Number(item.quantidade || 0), 0);
-    }, [itensFiltrados, tipoUnidadeSelecionada]);
+    }, [itensFiltrados]);
 
-    const unidadeSelecionadaLabel = tipoUnidadeSelecionada ? getTipoUnidadeSigla(tipoUnidadeSelecionada) : 'itens';
+
+    const unidadeSelecionadaLabel = getTipoUnidadeSigla(tipoUnidadeSelecionada);
+
+    const arrowOffsetLeft = menuPos.triggerLeft - menuPos.left + menuPos.triggerWidth / 2 - 8;
+
+    const renderEmptyState = (message) => (
+        <div className="empty-state-plain">
+            <div className="empty-state-icon">
+                <ZeniteIcon name="ban" size={92} strokeWidth={1.7} />
+            </div>
+            <p className="empty-state-text">{message}</p>
+        </div>
+    );
 
     return (
-        <div className="detail-view w-full">
-            <div className={`space-items-manager ${menuAbertoId ? 'space-items-manager-open' : ''}`}>
+        <div className="w-full inventory-list-fixed">
+            <div className="inventory-list-fixed-header">
                 <div className="space-items-heading">
-                    <h2 className="space-items-title">Itens de Estoque</h2>
+                    <h2 className="page-title no-margin">Itens de Estoque</h2>
                     <div className="space-items-total">
                         <span className="space-items-total-icon">
                             <ZeniteIcon name="check" size={16} />
                         </span>
                         <strong>Total:</strong>
-                        <span>{formatQuantity(totalFiltrado)} {unidadeSelecionadaLabel}</span>
+                        <span>
+                            {tipoUnidadeSelecionada ? formatQuantityMasked(totalFiltrado) : formatQuantity(totalFiltrado)} {unidadeSelecionadaLabel}
+                        </span>
                     </div>
                 </div>
 
@@ -84,16 +123,6 @@ export default function ItemEstoqueList({
                 </label>
 
                 <div className="space-items-unit-filter" role="radiogroup" aria-label="Filtrar por unidade de medida">
-                    <label className="space-items-unit-option">
-                        <input
-                            type="radio"
-                            name="tipoUnidadeMedidaItensEstoque"
-                            value=""
-                            checked={tipoUnidadeSelecionada === ''}
-                            onChange={() => setTipoUnidadeSelecionada('')}
-                        />
-                        <span>Todos os itens</span>
-                    </label>
                     {TIPOS_UNIDADE_FILTRO.map(unidade => (
                         <label key={unidade.value} className="space-items-unit-option">
                             <input
@@ -107,21 +136,16 @@ export default function ItemEstoqueList({
                         </label>
                     ))}
                 </div>
+            </div>
 
+
+            <div className={`inventory-list-scroll space-items-manager ${menuAbertoId ? 'space-items-manager-open' : ''}`}>
                 {loading ? (
                     <LoadingWaves variant="cards" rows={4} label="Carregando itens" />
                 ) : itens.length === 0 ? (
-                    <div className="card detail-card">
-                        <div className="empty-state-body-compact">
-                            <p className="empty-state-text">Nenhum item de estoque cadastrado.</p>
-                        </div>
-                    </div>
+                    renderEmptyState('Nenhum item de estoque cadastrado.')
                 ) : itensFiltrados.length === 0 ? (
-                    <div className="card detail-card">
-                        <div className="empty-state-body-compact">
-                            <p className="empty-state-text">Nenhum item encontrado para os filtros.</p>
-                        </div>
-                    </div>
+                    renderEmptyState('Nenhum item encontrado para os filtros.')
                 ) : (
                     <div className="space-items-list">
                         {itensFiltrados.map(item => (
@@ -135,7 +159,7 @@ export default function ItemEstoqueList({
                                         Local: {getNomeEspaco(item.espacoId)}
                                     </p>
                                     <p className="space-item-management-quantity">
-                                        {formatQuantity(item.quantidade)} {getTipoUnidadeSigla(item.tipoUnidadeMedida)}
+                                        {formatQuantityMasked(item.quantidade)} {getTipoUnidadeSigla(item.tipoUnidadeMedida)}
                                     </p>
                                     {formatItemDate(item) && (
                                         <time className="space-item-management-date">{formatItemDate(item)}</time>
@@ -145,49 +169,93 @@ export default function ItemEstoqueList({
                                 <div className="space-item-management-menu">
                                     <button
                                         type="button"
+                                        ref={(el) => { menuTriggerRefs.current[item.itemEstoqueId] = el; }}
                                         className="space-item-menu-trigger"
-                                        onClick={() => setMenuAbertoId(menuAbertoId === item.itemEstoqueId ? null : item.itemEstoqueId)}
+                                        onClick={() => {
+                                            const novoId = menuAbertoId === item.itemEstoqueId ? null : item.itemEstoqueId;
+                                            setMenuAbertoId(novoId);
+
+                                            if (novoId) {
+                                                const trigger = menuTriggerRefs.current[novoId];
+                                                if (trigger) {
+                                                    const rect = trigger.getBoundingClientRect();
+                                                    const spaceBelow = (window.visualViewport?.height ?? window.innerHeight) - rect.bottom;
+                                                    const openUp = spaceBelow < 260;
+                                                    const menuWidth = 220;
+                                                    const leftPos = Math.max(4, rect.right - menuWidth);
+
+                                                    setMenuDirection(openUp ? 'up' : 'down');
+                                                   setMenuPos({
+                                                        top: openUp ? rect.top - 4 : rect.bottom + 4,
+                                                        left: leftPos,
+                                                        width: menuWidth,
+                                                        triggerLeft: rect.left,
+                                                        triggerWidth: rect.width,
+                                                        triggerBottom: rect.bottom
+                                                    });
+                                                }
+                                            }
+                                        }}
                                         aria-label={`Abrir ações de ${item.descricao}`}
                                         aria-expanded={menuAbertoId === item.itemEstoqueId}
                                     >
                                         <ZeniteIcon name="ellipsis" size={28} />
                                     </button>
-
-                                    {menuAbertoId === item.itemEstoqueId && (
-                                        <div className="space-item-actions-menu">
-                                            <button type="button" className="space-item-menu-action space-item-menu-entry" onClick={() => { setMenuAbertoId(null); onAbrirMovimentacao(item, 1); }}>
-                                                <ZeniteIcon name="plus" size={22} />
-                                                <span>Entrada</span>
-                                            </button>
-                                            <button type="button" className="space-item-menu-action space-item-menu-exit" onClick={() => { setMenuAbertoId(null); onAbrirMovimentacao(item, 2); }}>
-                                                <ZeniteIcon name="minus" size={22} />
-                                                <span>Saída</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="space-item-menu-action space-item-menu-delete"
-                                                onClick={() => { setMenuAbertoId(null); onExcluirItem(item); }}
-                                                disabled={excluindoItemId === item.itemEstoqueId}
-                                            >
-                                                <ZeniteIcon name="trash" size={22} />
-                                                <span>Excluir</span>
-                                            </button>
-                                            <button type="button" className="space-item-menu-action space-item-menu-edit" onClick={() => { setMenuAbertoId(null); onEditarItem(item); }}>
-                                                <ZeniteIcon name="pencil" size={22} />
-                                                <span>Editar</span>
-                                            </button>
-                                            <button type="button" className="space-item-menu-action space-item-menu-history" onClick={() => { setMenuAbertoId(null); onHistoricoItem(item); }}>
-                                                <ZeniteIcon name="clock" size={22} />
-                                                <span>Histórico</span>
-                                            </button>
-                                        </div>
-                                    )}
                                 </div>
                             </article>
                         ))}
                     </div>
                 )}
             </div>
+
+
+           {menuAbertoId && (() => {
+                const item = itensFiltrados.find(i => i.itemEstoqueId === menuAbertoId);
+                if (!item) return null;
+
+                return (
+                    <div
+                        className={`space-item-actions-menu space-item-actions-menu-${menuDirection}`}
+                        style={{
+                            position: 'fixed',
+                            top: menuDirection === 'down' ? menuPos.top : 'auto',
+                            bottom: menuDirection === 'up' ? window.innerHeight - menuPos.triggerBottom + 4 : 'auto',
+                            left: menuPos.left,
+                            width: menuPos.width,
+                            zIndex: 9999,
+                            '--arrow-offset': `${arrowOffsetLeft}px`,
+                            overflow: 'visible'
+                        }}
+                    >
+                        <button type="button" className="space-item-menu-action space-item-menu-entry" onClick={() => { setMenuAbertoId(null); onAbrirMovimentacao(item, 1); }}>
+                            <ZeniteIcon name="plus" size={22} />
+                            <span>Entrada</span>
+                        </button>
+                        <button type="button" className="space-item-menu-action space-item-menu-exit" onClick={() => { setMenuAbertoId(null); onAbrirMovimentacao(item, 2); }}>
+                            <ZeniteIcon name="minus" size={22} />
+                            <span>Saída</span>
+                        </button>
+                        <button
+                            type="button"
+                            className="space-item-menu-action space-item-menu-delete"
+                            onClick={() => { setMenuAbertoId(null); onExcluirItem(item); }}
+                            disabled={excluindoItemId === item.itemEstoqueId}
+                        >
+                            <ZeniteIcon name="trash" size={22} />
+                            <span>Excluir</span>
+                        </button>
+                        <button type="button" className="space-item-menu-action space-item-menu-edit" onClick={() => { setMenuAbertoId(null); onEditarItem(item); }}>
+                            <ZeniteIcon name="pencil" size={22} />
+                            <span>Editar</span>
+                        </button>
+                        <button type="button" className="space-item-menu-action space-item-menu-history" onClick={() => { setMenuAbertoId(null); onHistoricoItem(item); }}>
+                            <ZeniteIcon name="clock" size={22} />
+                            <span>Histórico</span>
+                        </button>
+                    </div>
+                );
+            })()}
+
 
             <div className="detail-action-bar detail-action-bar-one">
                 <button className="button" onClick={onAbrirNovo}>
@@ -196,7 +264,8 @@ export default function ItemEstoqueList({
                 </button>
             </div>
 
+
             {messageModal}
         </div>
     );
-}
+}   

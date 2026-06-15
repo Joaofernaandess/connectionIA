@@ -54,21 +54,25 @@ export default function ItemEstoqueDetail({
                                     <input type="text" value={formEdicao.descricao} onChange={e => onChangeFormEdicao({ ...formEdicao, descricao: e.target.value })} className={getInputClassName(fieldErrors.Descricao)} />
                                     {fieldErrors.Descricao && <small className="invalid-feedback d-block">{fieldErrors.Descricao}</small>}
                                 </div>
-                                <div className="column-3 mb-1">
-                                    <label className={`label-sm ${fieldErrors.EspacoId ? 'error' : ''}`}>Local (Espaço)</label>
-                                    <select value={formEdicao.espacoId} className={getInputClassName(fieldErrors.EspacoId)} disabled>
-                                        {espacos.map(e => <option key={e.espacoId} value={e.espacoId}>{e.nome}</option>)}
-                                    </select>
-                                    {fieldErrors.EspacoId && <small className="invalid-feedback d-block">{fieldErrors.EspacoId}</small>}
-                                </div>
-                                <div className="column-3 mb-1">
-                                    <label className={`label-sm ${fieldErrors.TipoUnidadeMedida ? 'error' : ''}`}>Unidade</label>
-                                    <select value={formEdicao.tipoUnidadeMedida} onChange={e => onChangeFormEdicao({ ...formEdicao, tipoUnidadeMedida: e.target.value })} className={getInputClassName(fieldErrors.TipoUnidadeMedida)}>
-                                        {Object.entries(TIPO_UNIDADE).map(([key, val]) => <option key={key} value={key}>{val}</option>)}
-                                    </select>
+                                <div className="column-4 mb-1">
+                                    <span className={`label-sm ${fieldErrors.TipoUnidadeMedida ? 'error' : 'text-muted'}`}>Unidade</span>
+                                    <div className="space-items-unit-filter" role="radiogroup" aria-label="Unidade de medida">
+                                        {Object.entries(TIPO_UNIDADE).map(([key, val]) => (
+                                            <label key={key} className="space-items-unit-option">
+                                                <input
+                                                    type="radio"
+                                                    name="tipoUnidadeMedidaEditarItem"
+                                                    value={key}
+                                                    checked={Number(formEdicao.tipoUnidadeMedida) === Number(key)}
+                                                    onChange={e => onChangeFormEdicao({ ...formEdicao, tipoUnidadeMedida: e.target.value })}
+                                                />
+                                                <span>{val}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                     {fieldErrors.TipoUnidadeMedida && <small className="invalid-feedback d-block">{fieldErrors.TipoUnidadeMedida}</small>}
                                 </div>
-                                <div className="column-2 mb-1">
+                                <div className="column-4 mb-1">
                                     <label className="label-sm text-muted">Saldo Atual</label>
                                     <input type="text" value={formEdicao.quantidade} className="w-full no-field-margin" readOnly />
                                 </div>

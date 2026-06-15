@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MessageModal from '../../components/MessageModal';
+import ZeniteIcon from '../../components/ZeniteIcon';
 import { criarEspaco } from '../../services/espacoService';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../../utils/apiUtils';
 import { criarPayloadEspaco } from '../../utils/espacoViewModel';
@@ -38,27 +39,29 @@ export default function NovoEspacoPage({ token, unidadeOrganizacionalId }) {
     return (
         <div className="detail-view detail-form-view w-full">
             <div className="detail-heading">
-                <h2 className="no-margin">Novo Espaço</h2>
+                <h2 className="page-title no-margin">Novo Espaço</h2>
             </div>
 
             <form className="detail-form-layout" onSubmit={handleSubmit} noValidate>
                 <div className="card detail-card detail-form-scroll-card">
                     <div className="detail-card-body">
                         <div className="row">
-                            <div className="column-6 mb-1">
+                            <div className="column-12 mb-1">
                                 <label className="label-sm">Nome</label>
                                 <input
                                     type="text"
+                                    placeholder="Digite o nome do espaço"
                                     value={formData.nome}
                                     onChange={e => setFormData({ ...formData, nome: e.target.value })}
                                     className={`w-full no-field-margin ${fieldErrors.Nome ? 'is-invalid' : ''}`}
                                 />
                                 {fieldErrors.Nome && <small className="invalid-feedback d-block">{fieldErrors.Nome}</small>}
                             </div>
-                            <div className="column-6 mb-1">
+                            <div className="column-12 mb-1">
                                 <label className="label-sm">Descrição</label>
                                 <textarea
-                                    rows={2}
+                                    rows={5}
+                                    placeholder="Descreva o espaço"
                                     value={formData.descricao}
                                     onChange={e => setFormData({ ...formData, descricao: e.target.value })}
                                     className={`w-full no-field-margin ${fieldErrors.Descricao ? 'is-invalid' : ''}`}
@@ -71,10 +74,12 @@ export default function NovoEspacoPage({ token, unidadeOrganizacionalId }) {
 
                 <div className="detail-action-bar detail-action-bar-two">
                     <button type="button" className="button button-outline" onClick={() => navigate('/espacos')}>
-                        Voltar
+                        <ZeniteIcon name="arrow-left" />
+                        <span className="button-icon-text">Voltar</span>
                     </button>
                     <button type="submit" className="button">
-                        Salvar
+                        <ZeniteIcon name="save" size={22} />
+                        <span className="button-icon-text">Salvar</span>
                     </button>
                 </div>
             </form>

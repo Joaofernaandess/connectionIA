@@ -27,7 +27,7 @@ export default function EspacoList({
                 <div className="mb-2">
                     <input
                         type="text"
-                        placeholder="Pesquisar espaços por nome ou descrição..."
+                        placeholder="Pesquisar espaços..."
                         value={pesquisa}
                         onChange={(e) => onChangePesquisa(e.target.value)}
                         className="w-full no-field-margin"
@@ -39,13 +39,21 @@ export default function EspacoList({
                 {loading ? (
                     <LoadingWaves variant="cards" rows={4} label="Carregando espaços" />
                 ) : espacosFiltrados.length === 0 ? (
-                    <div className="card empty-state-card">
-                        <div className="empty-state-body">
-                            <p className="empty-state-text">
-                                {espacos.length === 0 ? 'Nenhum espaço cadastrado nesta unidade.' : 'Nenhum espaço encontrado para a pesquisa.'}
-                            </p>
+                    espacos.length === 0 ? (
+                        <div className="empty-state-plain">
+                            <div className="empty-state-icon">
+                                <ZeniteIcon name="ban" size={92} strokeWidth={1.7} />
+                            </div>
+                            <p className="empty-state-text">Nenhum espaço cadastrado nesta unidade.</p>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="empty-state-plain">
+                            <div className="empty-state-icon">
+                                <ZeniteIcon name="ban" size={92} strokeWidth={1.7} />
+                            </div>
+                            <p className="empty-state-text">Nenhum espaço encontrado para a pesquisa.</p>
+                        </div>
+                    )
                 ) : (
                     <div className="inventory-grid">
                         {espacosFiltrados.map(espaco => (

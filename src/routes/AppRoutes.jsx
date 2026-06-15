@@ -9,7 +9,6 @@ import ResetPasswordPage from '../pages/ResetPasswordPage';
 
 export default function AppRoutes({
     token,
-    pendingMessage,
     onLogin,
     onLogout,
     onPendingApproval
@@ -42,7 +41,7 @@ export default function AppRoutes({
             />
             <Route
                 path="/waiting-approval"
-                element={token ? <Navigate to="/" replace /> : <PendingApprovalPage message={pendingMessage} />}
+                element={token ? <Navigate to="/" replace /> : <PendingApprovalPage />}
             />
             <Route
                 path="/*"

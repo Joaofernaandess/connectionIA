@@ -1,4 +1,4 @@
-import { formatQuantity } from '../../utils/quantity';
+import { formatQuantityMasked } from '../../utils/quantity';
 import LoadingWaves from '../LoadingWaves';
 import ZeniteIcon from '../ZeniteIcon';
 
@@ -84,7 +84,7 @@ export default function HistoricoMovimentacoes({ historico, loading }) {
                                     ) : (
                                         <>
                                             {visual.icon && <ZeniteIcon name={visual.icon} size={14} />}
-                                            <span>{formatQuantity(qtd)}</span>
+                                            <span>{formatQuantityMasked(qtd)}</span>
                                         </>
                                     )}
                                 </div>

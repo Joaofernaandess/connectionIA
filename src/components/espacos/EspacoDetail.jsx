@@ -31,21 +31,22 @@ export default function EspacoDetail({
     const isItensMode = mode === 'itens';
 
     return (
-        <div className="detail-view w-full">
+        <div className={isItensMode ? 'w-full inventory-list-fixed' : 'detail-view w-full detail-form-view'}>
             {!isItensMode && (
                 <div className="detail-heading">
-                    <h2 className="no-margin">Detalhes do Espaço</h2>
+                    <h2 className="page-title no-margin">Detalhes do Espaço</h2>
                 </div>
             )}
 
             {!isItensMode && (
-                <div className="card detail-card">
+                <div className="card detail-card detail-form-scroll-card">
                     <div className="detail-card-body">
                         <div className="row">
                             <div className="column-6 mb-1">
                                 <label className="label-sm">Nome</label>
                                 <input
                                     type="text"
+                                    placeholder="Digite o nome do espaço"
                                     value={formEdicao.nome}
                                     onChange={e => onChangeFormEdicao({ ...formEdicao, nome: e.target.value })}
                                     className={`w-full no-field-margin ${fieldErrors.Nome ? 'is-invalid' : ''}`}
@@ -55,7 +56,8 @@ export default function EspacoDetail({
                             <div className="column-6 mb-1">
                                 <label className="label-sm">Descrição</label>
                                 <textarea
-                                    rows={2}
+                                    rows={4}
+                                    placeholder="Descreva o espaço"
                                     value={formEdicao.descricao}
                                     onChange={e => onChangeFormEdicao({ ...formEdicao, descricao: e.target.value })}
                                     className={`w-full no-field-margin ${fieldErrors.Descricao ? 'is-invalid' : ''}`}

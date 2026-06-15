@@ -17,7 +17,7 @@ import {
     criarPayloadItemEstoque,
     criarPayloadMovimentacao
 } from '../../utils/itemEstoqueViewModel';
-import { formatQuantityInput, parseQuantity } from '../../utils/quantity';
+import { formatQuantityMasked, parseQuantity } from '../../utils/quantity';
 
 export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, usuarioId }) {
     const navigate = useNavigate();
@@ -25,7 +25,6 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
     const { itemEstoqueId } = useParams();
     const mode = new URLSearchParams(location.search).get('secao') === 'historico' ? 'historico' : 'editar';
     const espacoOrigemId = location.state?.espacoOrigemId || '';
-    const rotaRetorno = espacoOrigemId ? `/espacos/${espacoOrigemId}/itens` : '/itens-estoque';
 
     const [itemAtivo, setItemAtivo] = useState(null);
     const [espacos, setEspacos] = useState([]);
@@ -41,6 +40,8 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showMovimentarModal, setShowMovimentarModal] = useState(false);
     const [showTransferirModal, setShowTransferirModal] = useState(false);
+    const espacoRetornoId = espacoOrigemId || itemAtivo?.espacoId || '';
+    const rotaRetorno = espacoRetornoId ? `/espacos/${espacoRetornoId}/itens` : '/itens-estoque';
 
     const carregarHistorico = useCallback(async () => {
         if (!itemEstoqueId) return;
@@ -79,7 +80,7 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
                     espacoId: item.espacoId || '',
                     descricao: item.descricao || '',
                     tipoUnidadeMedida: item.tipoUnidadeMedida || 1,
-                    quantidade: formatQuantityInput(item.quantidade || 0)
+                    quantidade: formatQuantityMasked(item.quantidade || 0)
                 });
             } else {
                 const mensagem = await extrairErro(!responseItem.ok ? responseItem : responseEspacos);
@@ -121,7 +122,7 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
             unidadeOrganizacionalId,
             formData: {
                 ...formEdicao,
-                quantidade: formatQuantityInput(itemAtivo.quantidade || 0)
+                quantidade: formatQuantityMasked(itemAtivo.quantidade || 0)
             }
         });
 
@@ -212,7 +213,7 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
                     : parseQuantity(itemAtivo.quantidade) - payload.quantidade;
 
                 setItemAtivo(prev => ({ ...prev, quantidade: novaQtde }));
-                setFormEdicao(prev => ({ ...prev, quantidade: formatQuantityInput(novaQtde) }));
+                setFormEdicao(prev => ({ ...prev, quantidade: formatQuantityMasked(novaQtde) }));
             } else if (response.status === 400) {
                 await aplicarErrosCampos(response, setFieldErrors, setErro);
             } else {

@@ -7,9 +7,9 @@ export default function ExcluirEspacoModal({ onClose, onConfirm }) {
                     <p className="modal-description">
                         Tem certeza que deseja excluir este espaço?
                     </p>
-                    <div className="modal-actions">
+                    <div className="modal-actions modal-actions-delete-confirmation">
                         <button type="button" className="button button-outline button-flex" onClick={onClose}>Cancelar</button>
-                        <button type="button" className="button button-danger button-flex" onClick={onConfirm}>Excluir Definitivo</button>
+                        <button type="button" className="button button-danger button-flex" onClick={onConfirm}>Excluir</button>
                     </div>
                 </div>
             </div>

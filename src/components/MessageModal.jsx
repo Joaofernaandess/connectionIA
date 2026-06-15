@@ -7,7 +7,9 @@ export default function MessageModal({
     autoClose = 8000,
     autoCloseMs,
 }) {
-    const isError = type === 'error';
+    const normalizedType = type === 'danger' ? 'error' : type;
+    const isError = normalizedType === 'error';
+    const messageType = normalizedType === 'warning' ? 'warning' : (isError ? 'error' : 'success');
     const closeDelay = autoCloseMs ?? autoClose;
     const isStandardDelay = closeDelay === 8000;
     const modalTitle = title || '';
@@ -19,7 +21,7 @@ export default function MessageModal({
         <div className="message-overlay message-overlay-dim">
             <div className="card message-card">
                 {modalTitle && (
-                    <h2 className={isError ? 'message-title-error' : 'message-title-success'}>
+                    <h2 className={`message-title-${messageType}`}>
                         {modalTitle}
                     </h2>
                 )}
@@ -29,7 +31,7 @@ export default function MessageModal({
                 </p>
 
                 <div
-                    className={`message-progress ${isError ? 'message-progress-error' : 'message-progress-success'}`}
+                    className={`message-progress message-progress-${messageType}`}
                     role="progressbar"
                     aria-valuemin="0"
                     aria-valuemax="100"
@@ -44,7 +46,7 @@ export default function MessageModal({
 
                 <button
                     type="button"
-                    className={`button button-full ${isError ? 'button-outline-error' : 'button-outline-success'}`}
+                    className={`button button-full button-outline-${messageType}`}
                     onClick={onClose}
                 >
                     {actionLabel}

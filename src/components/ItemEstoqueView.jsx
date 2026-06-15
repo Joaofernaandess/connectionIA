@@ -12,7 +12,7 @@ import {
     filtrarItensEstoque,
     ordenarItensEstoque
 } from '../utils/itemEstoqueViewModel';
-import { formatQuantityInput, parseQuantity } from '../utils/quantity';
+import { parseQuantity } from '../utils/quantity';
 import MessageModal from './MessageModal';
 import ExcluirItemModal from './itemEstoque/ExcluirItemModal';
 import ItemEstoqueList from './itemEstoque/ItemEstoqueList';
@@ -122,7 +122,7 @@ export default function ItemEstoqueView({ token, unidadeOrganizacionalId, usuari
 
                 setItens(prev => prev.map(item => (
                     item.itemEstoqueId === itemParaMovimentar.itemEstoqueId
-                        ? { ...item, quantidade: novaQuantidade, quantidadeFormatada: formatQuantityInput(novaQuantidade) }
+                        ? { ...item, quantidade: novaQuantidade }
                         : item
                 )));
                 setItemParaMovimentar(null);

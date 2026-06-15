@@ -1,36 +1,51 @@
-/* Overlay blur para todos os modais de confirmação */
-.modal-overlay {
-    background: transparent !important;
-    backdrop-filter: blur(6px) !important;
-    -webkit-backdrop-filter: blur(6px) !important;
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-/* Overlay blur para o MessageModal */
-.message-overlay,
-.message-overlay.message-overlay-dim {
-    background: transparent !important;
-    backdrop-filter: blur(6px) !important;
-    -webkit-backdrop-filter: blur(6px) !important;
+.detail-heading h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-/* Botão outline vermelho (erro) */
-.button-outline-error {
-    background: transparent;
-    border: 2px solid var(--color-error, #e53e3e);
-    color: var(--color-error, #e53e3e);
-}
-.button-outline-error:hover,
-.button-outline-error:active {
-    background: rgba(229, 62, 62, 0.10);
+.message-card .button {
+  font-size: 1.25rem;
+  padding: 1.4rem 1.25rem;
+  max-width: 120px;
+  margin-inline: auto;
 }
 
-/* Botão outline verde (sucesso) */
-.button-outline-success {
-    background: transparent;
-    border: 2px solid var(--color-success, #38a169);
-    color: var(--color-success, #38a169);
+/* Seta do menu - direção para baixo (menu abre abaixo do botão) */
+.space-item-actions-menu-down::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: -8px;
+    left: var(--arrow-offset, 50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid var(--color-surface, #1c2340);
 }
-.button-outline-success:hover,
-.button-outline-success:active {
-    background: rgba(56, 161, 105, 0.10);
+
+/* Seta do menu - direção para cima (menu abre acima do botão) */
+.space-item-actions-menu-up::after {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: -8px;
+    left: var(--arrow-offset, 50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid var(--color-surface, #1c2340);
+}
+
+.space-item-actions-menu {
+    position: relative;
+    overflow: visible;
 }

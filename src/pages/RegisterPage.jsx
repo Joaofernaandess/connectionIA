@@ -9,10 +9,11 @@ import { getBaseUrl } from '../utils/apiConfig';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../utils/apiUtils';
 import { JORNADA_USUARIO_NOME } from '../utils/jornadaUsuario';
 import { encryptedJsonBody } from '../utils/payloadCrypto';
+import { saveRouteSessionState } from '../utils/routeSessionState';
 
 export default function RegisterPage() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({ nome: '', username: '', senha: '', unidadeOrganizacionalId: '' });
+    const [formData, setFormData] = useState({ nome: '', username: '', senha: '', confirmaSenha: '', unidadeOrganizacionalId: '' });
     const [erro, setErro] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
 
@@ -35,14 +36,17 @@ export default function RegisterPage() {
 
             if (response.ok) {
                 const mensagem = await extrairMensagem(response);
+                const routeState = {
+                    username: formData.username,
+                    unidadeOrganizacionalId: formData.unidadeOrganizacionalId,
+                    jornadaUsuario: JORNADA_USUARIO_NOME.CODE_VALIDATE_PAGE,
+                    mensagem
+                };
+
+                saveRouteSessionState('code-validate', routeState);
                 navigate('/code-validate', {
                     replace: true,
-                    state: {
-                        username: formData.username,
-                        unidadeOrganizacionalId: formData.unidadeOrganizacionalId,
-                        jornadaUsuario: JORNADA_USUARIO_NOME.CODE_VALIDATE_PAGE,
-                        mensagem
-                    }
+                    state: routeState
                 });
             } else if (response.status === 400) {
                 await aplicarErrosCampos(response, setFieldErrors, setErro);
@@ -58,51 +62,68 @@ export default function RegisterPage() {
     return (
         <>
             <div className="container">
-                <div className="auth-page">
-                    <ThemeToggle fixo={false} />
-                    <div className="card auth-card auth-card-fixed">
-                        <h2 className="auth-title">Criar Conta</h2>
-                        <form onSubmit={handleSubmit} noValidate>
-
-                            <div className="mb-1">
-                                <label>
-                                    Nome Completo
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Seu nome"
-                                    value={formData.nome}
-                                    onChange={e => setFormData({ ...formData, nome: e.target.value })}
-                                    className={`w-full no-field-margin ${(fieldErrors.Nome || fieldErrors.nome) ? 'is-invalid' : ''}`}
-                                />
-                                {(fieldErrors.Nome || fieldErrors.nome) && <small className="invalid-feedback d-block">{fieldErrors.Nome || fieldErrors.nome}</small>}
+                <div className="auth-page auth-page-flow">
+                    <div className="auth-page-theme">
+                        <ThemeToggle fixo={false} />
+                    </div>
+                    <div className="card auth-card auth-card-fixed auth-card-flow">
+                        <form className="auth-flow-layout auth-register-flow" onSubmit={handleSubmit} noValidate>
+                            <div className="auth-flow-header">
+                                <h2 className="auth-title">Criar Conta</h2>
+                                <ThemeToggle fixo={false} />
                             </div>
 
-                            <PhoneInput
-                                value={formData.username}
-                                onChange={e => setFormData({ ...formData, username: e.target.value })}
-                                error={!!(fieldErrors.Username || fieldErrors.username)}
-                                errorMessage={fieldErrors.Username || fieldErrors.username}
-                            />
+                            <div className="auth-flow-body">
+                                <div className="mb-1">
+                                    <label>
+                                        Nome Completo
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Seu nome"
+                                        value={formData.nome}
+                                        onChange={e => setFormData({ ...formData, nome: e.target.value })}
+                                        className={`w-full no-field-margin ${(fieldErrors.Nome || fieldErrors.nome) ? 'is-invalid' : ''}`}
+                                    />
+                                    {(fieldErrors.Nome || fieldErrors.nome) && <small className="invalid-feedback d-block">{fieldErrors.Nome || fieldErrors.nome}</small>}
+                                </div>
 
-                            <PasswordInput
-                                label="Senha"
-                                value={formData.senha}
-                                onChange={e => setFormData({ ...formData, senha: e.target.value })}
-                                error={!!(fieldErrors.Senha || fieldErrors.senha)}
-                                errorMessage={fieldErrors.Senha || fieldErrors.senha}
-                            />
+                                <PhoneInput
+                                    value={formData.username}
+                                    onChange={e => setFormData({ ...formData, username: e.target.value })}
+                                    error={!!(fieldErrors.Username || fieldErrors.username)}
+                                    errorMessage={fieldErrors.Username || fieldErrors.username}
+                                />
 
-                            <UnidadeComboBox
-                                value={formData.unidadeOrganizacionalId}
-                                onChange={val => setFormData({ ...formData, unidadeOrganizacionalId: val })}
-                                error={!!(fieldErrors.UnidadeOrganizacionalId || fieldErrors.unidadeOrganizacionalId)}
-                                errorMessage={fieldErrors.UnidadeOrganizacionalId || fieldErrors.unidadeOrganizacionalId}
-                            />
+                                <PasswordInput
+                                    label="Senha"
+                                    value={formData.senha}
+                                    onChange={e => setFormData({ ...formData, senha: e.target.value })}
+                                    error={!!(fieldErrors.Senha || fieldErrors.senha)}
+                                    errorMessage={fieldErrors.Senha || fieldErrors.senha}
+                                />
 
-                            <button type="submit" className="button button-full mt-1">Cadastrar</button>
-                            <div className="auth-link-row-centered">
-                                <Link className="link-action" to="/login">Já tenho uma conta</Link>
+                                <PasswordInput
+                                    label="Confirmar Senha"
+                                    value={formData.confirmaSenha}
+                                    onChange={e => setFormData({ ...formData, confirmaSenha: e.target.value })}
+                                    error={!!(fieldErrors.ConfirmaSenha || fieldErrors.confirmaSenha)}
+                                    errorMessage={fieldErrors.ConfirmaSenha || fieldErrors.confirmaSenha}
+                                />
+
+                                <UnidadeComboBox
+                                    value={formData.unidadeOrganizacionalId}
+                                    onChange={val => setFormData({ ...formData, unidadeOrganizacionalId: val })}
+                                    error={!!(fieldErrors.UnidadeOrganizacionalId || fieldErrors.unidadeOrganizacionalId)}
+                                    errorMessage={fieldErrors.UnidadeOrganizacionalId || fieldErrors.unidadeOrganizacionalId}
+                                />
+                            </div>
+
+                            <div className="auth-flow-footer">
+                                <button type="submit" className="button button-full">Cadastrar</button>
+                                <div className="auth-link-row-centered">
+                                    <Link className="link-action" to="/login">Já tenho uma conta</Link>
+                                </div>
                             </div>
                         </form>
                     </div>

@@ -66,51 +66,57 @@ export default function ValidarUsuariosView({ token }) {
     });
 
     return (
-        <div className="w-full">
-            <h2 className="mb-2">Usuários Pendentes</h2>
+        <div className="w-full inventory-list-fixed">
+            <div className="inventory-list-fixed-header">
+                <div className="inventory-list-header">
+                    <h2 className="page-title no-margin">Usuários Pendentes</h2>
+                </div>
 
-            <div className="mb-2">
-                <input
-                    type="text"
-                    placeholder="Pesquisar por nome, telefone ou unidade..."
-                    value={pesquisa}
-                    onChange={(e) => setPesquisa(e.target.value)}
-                    className="w-full"
-                />
+                <div className="mb-2">
+                    <input
+                        type="text"
+                        placeholder="Pesquisar por nome, telefone ou unidade..."
+                        value={pesquisa}
+                        onChange={(e) => setPesquisa(e.target.value)}
+                        className="w-full"
+                    />
+                </div>
             </div>
 
-            {loading ? (
-                <LoadingWaves variant="cards" rows={3} label="Carregando usuários pendentes" />
-            ) : usuariosFiltrados.length === 0 ? (
-                <div className="card validation-empty-card">
-                    <p className="empty-state-text">
-                        {usuarios.length === 0 ? 'Nenhum usuário pendente de validação.' : 'Nenhum resultado encontrado para a pesquisa.'}
-                    </p>
-                </div>
-            ) : (
-                <div className="row">
-                    {usuariosFiltrados.map(user => (
-                        <div key={user.usuarioId} className="column-4 mb-1">
+            <div className="inventory-list-scroll">
+                {loading ? (
+                    <LoadingWaves variant="cards" rows={3} label="Carregando usuários pendentes" />
+                ) : usuariosFiltrados.length === 0 ? (
+                    <div className="validation-empty-card">
+                        <p className="empty-state-text">
+                            {usuarios.length === 0 ? 'Nenhum usuário pendente de validação.' : 'Nenhum resultado encontrado para a pesquisa.'}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="row">
+                        {usuariosFiltrados.map(user => (
+                            <div key={user.usuarioId} className="column-4 mb-1">
 
-                            <div className="card validation-user-card">
-                                <h3 className="validation-user-title">{user.nome}</h3>
+                                <div className="card validation-user-card">
+                                    <h3 className="validation-user-title">{user.nome}</h3>
 
-                                <p className="validation-user-meta">
-                                    <strong>Username:</strong> {formatPhone(user.username)}
-                                </p>
+                                    <p className="validation-user-meta">
+                                        <strong>Username:</strong> {formatPhone(user.username)}
+                                    </p>
 
-                                <p className="validation-user-description">
-                                    <strong>Unidade:</strong> {user.nomeUnidadeOrganizacional || 'Sem Unidade'}
-                                </p>
+                                    <p className="validation-user-description">
+                                        <strong>Unidade:</strong> {user.nomeUnidadeOrganizacional || 'Sem Unidade'}
+                                    </p>
 
-                                <button className="button button-full" onClick={() => handleAprovar(user.usuarioId)}>
-                                    Aprovar Acesso
-                                </button>
+                                    <button className="button button-full" onClick={() => handleAprovar(user.usuarioId)}>
+                                        Aprovar Acesso
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        ))}
+                    </div>
+                )}
+            </div>
 
             {(erro || sucesso) && (
                 <MessageModal

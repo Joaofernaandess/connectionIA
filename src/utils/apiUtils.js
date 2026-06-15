@@ -28,6 +28,20 @@ const extrairMensagemHeader = (response) => {
     }
 };
 
+const notificarSessaoExpirada = (message) => {
+    if (typeof window === 'undefined') return;
+
+    window.dispatchEvent(new CustomEvent('estoque-certo:session-expired', {
+        detail: { message }
+    }));
+};
+
+const tratarSessaoExpirada = (response, message) => {
+    if (response?.status !== 401) return;
+
+    notificarSessaoExpirada(message);
+};
+
 export const lerRespostaApi = async (response) => {
     const text = await response.text();
     if (!text) return null;
@@ -115,7 +129,9 @@ export const extrairErrosCamposDados = (dados) => {
 
 export const extrairMensagem = async (response) => {
     try {
-        return extrairMensagemDados(await lerRespostaApi(response)) || extrairMensagemHeader(response);
+        const message = extrairMensagemDados(await lerRespostaApi(response)) || extrairMensagemHeader(response);
+        tratarSessaoExpirada(response, message);
+        return message;
     } catch (error) {
         return '';
     }
@@ -126,9 +142,12 @@ export const extrairErro = extrairMensagem;
 export const extrairErrosCampos = async (response) => {
     try {
         const dados = await lerRespostaApi(response);
+        const message = extrairMensagemDados(dados);
+        tratarSessaoExpirada(response, message);
+
         return {
             fieldErrors: extrairErrosCamposDados(dados),
-            message: extrairMensagemDados(dados)
+            message
         };
     } catch (error) {
         return {

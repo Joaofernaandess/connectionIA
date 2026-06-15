@@ -239,7 +239,7 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId, usuar
         return (
             <div className="detail-view w-full">
                 <div className="detail-heading">
-                    <h2 className="no-margin">Detalhes do Espaço</h2>
+                    <h2 className="page-title no-margin">Detalhes do Espaço</h2>
                 </div>
                 <LoadingWaves variant="list" rows={1} label="Carregando espaço" />
                 {messageModal}
@@ -266,7 +266,7 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId, usuar
                 onExcluir={handleExcluirEspaco}
                 onExcluirItem={setItemParaExcluir}
                 onHistoricoItem={(item) => navigate(`/itens-estoque/${item.itemEstoqueId}?secao=historico`, { state: { espacoOrigemId: espacoId } })}
-                onNovoItem={() => navigate('/itens-estoque/novo', { state: { espacoId } })}
+                onNovoItem={() => navigate(`/itens-estoque/novo?espacoId=${espacoId}`, { state: { espacoId } })}
                 onAbrirMovimentacaoItem={abrirMovimentacaoItem}
                 onOpenDelete={() => setShowDeleteModal(true)}
                 onVoltar={() => navigate('/espacos')}

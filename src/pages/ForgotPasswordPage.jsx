@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import MessageModal from '../components/MessageModal';
 import PhoneInput from '../components/PhoneInput';
 import ThemeToggle from '../components/ThemeToggle';
@@ -7,6 +7,7 @@ import UnidadeComboBox from '../components/UnidadeComboBox';
 import { getBaseUrl } from '../utils/apiConfig';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../utils/apiUtils';
 import { encryptedJsonBody } from '../utils/payloadCrypto';
+import { saveRouteSessionState } from '../utils/routeSessionState';
 
 export default function ForgotPasswordPage() {
     const navigate = useNavigate();
@@ -33,12 +34,15 @@ export default function ForgotPasswordPage() {
 
             if (res.ok) {
                 const mensagem = await extrairMensagem(res);
+                const routeState = {
+                    username: data.username,
+                    unidadeOrganizacionalId: data.unidadeOrganizacionalId,
+                    mensagem
+                };
+
+                saveRouteSessionState('code-validate', routeState);
                 navigate('/code-validate', {
-                    state: {
-                        username: data.username,
-                        unidadeOrganizacionalId: data.unidadeOrganizacionalId,
-                        mensagem
-                    }
+                    state: routeState
                 });
             } else if (res.status === 400) {
                 await aplicarErrosCampos(res, setFieldErrors, setErro);
@@ -53,26 +57,38 @@ export default function ForgotPasswordPage() {
     return (
         <>
             <div className="container">
-                <div className="auth-page">
-                    <ThemeToggle fixo={false} />
-                    <div className="card auth-card">
-                        <h2 className="auth-title">Recuperar Acesso</h2>
+                <div className="auth-page auth-page-flow">
+                    <div className="auth-page-theme">
+                        <ThemeToggle fixo={false} />
+                    </div>
+                    <div className="card auth-card auth-card-flow">
+                        <form className="auth-flow-layout" onSubmit={handleForgot} noValidate>
+                            <div className="auth-flow-header">
+                                <h2 className="auth-title">Recuperar Acesso</h2>
+                                <ThemeToggle fixo={false} />
+                            </div>
 
-                        <form onSubmit={handleForgot} noValidate>
-                            <PhoneInput
-                                value={data.username}
-                                onChange={e => setData({ ...data, username: e.target.value })}
-                                error={!!fieldErrors.Username}
-                                errorMessage={fieldErrors.Username}
-                            />
-                            <UnidadeComboBox
-                                value={data.unidadeOrganizacionalId}
-                                onChange={val => setData({ ...data, unidadeOrganizacionalId: val })}
-                                error={!!fieldErrors.UnidadeOrganizacionalId}
-                                errorMessage={fieldErrors.UnidadeOrganizacionalId}
-                            />
-                            <button type="submit" className="button button-full mt-1">Enviar Código</button>
-                            <button type="button" className="button button-outline button-full mt-1" onClick={() => navigate('/login')}>Cancelar</button>
+                            <div className="auth-flow-body">
+                                <PhoneInput
+                                    value={data.username}
+                                    onChange={e => setData({ ...data, username: e.target.value })}
+                                    error={!!fieldErrors.Username}
+                                    errorMessage={fieldErrors.Username}
+                                />
+                                <UnidadeComboBox
+                                    value={data.unidadeOrganizacionalId}
+                                    onChange={val => setData({ ...data, unidadeOrganizacionalId: val })}
+                                    error={!!fieldErrors.UnidadeOrganizacionalId}
+                                    errorMessage={fieldErrors.UnidadeOrganizacionalId}
+                                />
+                            </div>
+
+                            <div className="auth-flow-footer">
+                                <button type="submit" className="button button-full">Enviar Código</button>
+                                <div className="auth-link-row-centered">
+                                    <Link className="link-action" to="/login">Cancelar</Link>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>

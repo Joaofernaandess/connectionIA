@@ -48,6 +48,15 @@ export function formatQuantity(value) {
     }).format(Number.isFinite(parsed) ? parsed : 0);
 }
 
+export function formatQuantityMasked(value) {
+    const parsed = typeof value === 'number' ? value : parseQuantity(value);
+
+    return new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: 3,
+        maximumFractionDigits: 3
+    }).format(Number.isFinite(parsed) ? parsed : 0);
+}
+
 export function formatQuantityInput(value) {
     const parsed = typeof value === 'number' ? value : parseQuantity(value);
     if (!Number.isFinite(parsed)) return '';

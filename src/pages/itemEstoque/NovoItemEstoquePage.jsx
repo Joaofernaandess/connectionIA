@@ -12,7 +12,8 @@ const getInputClassName = (isError) => `w-full no-field-margin ${isError ? 'is-i
 export default function NovoItemEstoquePage({ token, unidadeOrganizacionalId }) {
     const navigate = useNavigate();
     const location = useLocation();
-    const espacoOrigemId = location.state?.espacoId || '';
+    const searchParams = new URLSearchParams(location.search);
+    const espacoOrigemId = location.state?.espacoId || searchParams.get('espacoId') || '';
     const [formData, setFormData] = useState({ espacoId: espacoOrigemId, descricao: '', tipoUnidadeMedida: 1, quantidade: '0,000' });
     const [fieldErrors, setFieldErrors] = useState({});
     const [erro, setErro] = useState('');

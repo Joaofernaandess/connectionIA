@@ -5,7 +5,7 @@ export default function ExcluirItemModal({ onClose, onConfirm }) {
                 <div className="modal-card-body">
                     <h2 className="modal-title">Excluir Item</h2>
                     <p className="modal-description">Tem certeza que deseja excluir o item de estoque? Todo o histórico de movimentações também será perdido.</p>
-                    <div className="modal-actions">
+                    <div className="modal-actions modal-actions-delete-confirmation">
                         <button type="button" className="button button-outline button-flex" onClick={onClose}>Cancelar</button>
                         <button type="button" className="button button-exit button-flex" onClick={onConfirm}>Excluir</button>
                     </div>

@@ -6,15 +6,16 @@ import { getBaseUrl } from '../utils/apiConfig';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../utils/apiUtils';
 import { isCodeValidateJourney, isWaitingApprovalJourney } from '../utils/jornadaUsuario';
 import { decryptEncryptedResponse, encryptedJsonBody, encryptedJsonBodyWithKey } from '../utils/payloadCrypto';
+import { clearRouteSessionState, readRouteSessionState, saveRouteSessionState } from '../utils/routeSessionState';
 
 export default function CodeValidatePage() {
     const navigate = useNavigate();
     const location = useLocation();
-    const recoveryData = location.state || {};
+    const [recoveryData] = useState(() => location.state || readRouteSessionState('code-validate') || {});
     const isCadastro = isCodeValidateJourney(recoveryData.jornadaUsuario);
     const [code, setCode] = useState('');
     const [erro, setErro] = useState('');
-    const [sucesso, setSucesso] = useState(recoveryData.mensagem || '');
+    const [sucesso, setSucesso] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
     const [cooldownReenvio, setCooldownReenvio] = useState(0);
     const codeError = fieldErrors.Code || fieldErrors.code || fieldErrors.Codigo || fieldErrors.codigo || '';
@@ -22,7 +23,10 @@ export default function CodeValidatePage() {
     useEffect(() => {
         if (!recoveryData.username || !recoveryData.unidadeOrganizacionalId) {
             navigate(isCadastro ? '/login' : '/forgot-password', { replace: true });
+            return;
         }
+
+        saveRouteSessionState('code-validate', recoveryData);
     }, [isCadastro, navigate, recoveryData.unidadeOrganizacionalId, recoveryData.username]);
 
     useEffect(() => {
@@ -75,14 +79,15 @@ export default function CodeValidatePage() {
                     '';
 
                 if (isWaitingApprovalJourney(jornadaUsuario)) {
-                    navigate('/waiting-approval', {
-                        replace: true,
-                        state: { message }
-                    });
+                    clearRouteSessionState('code-validate');
+                    navigate('/waiting-approval', { replace: true });
                     return;
                 }
 
+                clearRouteSessionState('code-validate');
+                saveRouteSessionState('reset-password', { codigoAcessoId });
                 navigate('/reset-password', {
+                    replace: true,
                     state: {
                         codigoAcessoId
                     }
@@ -127,37 +132,54 @@ export default function CodeValidatePage() {
         }
     };
 
+    const handleVoltar = () => {
+        clearRouteSessionState('code-validate');
+        navigate(isCadastro ? '/login' : '/forgot-password');
+    };
+
     return (
         <>
             <div className="container">
-                <div className="auth-page">
-                    <ThemeToggle fixo={false} />
-                    <div className="card auth-card">
-                        <h2 className="auth-title">Validar Código</h2>
-
-                        <form onSubmit={handleVerifyCode} noValidate>
-                            <div className="mb-1">
-                                <label>Código Enviado</label>
-                                <input
-                                    type="text"
-                                    value={code}
-                                    onChange={e => setCode(e.target.value)}
-                                    className={`w-full no-field-margin ${codeError ? 'is-invalid' : ''}`}
-                                />
-                                {codeError && <small className="invalid-feedback d-block">{codeError}</small>}
+                <div className="auth-page auth-page-flow">
+                    <div className="auth-page-theme">
+                        <ThemeToggle fixo={false} />
+                    </div>
+                    <div className="card auth-card auth-card-flow">
+                        <form className="auth-flow-layout" onSubmit={handleVerifyCode} noValidate>
+                            <div className="auth-flow-header">
+                                <h2 className="auth-title">Validar Código</h2>
+                                <ThemeToggle fixo={false} />
                             </div>
-                            <button type="submit" className="button button-full">Verificar</button>
-                            <button
-                                type="button"
-                                className="button button-outline button-full mt-1"
-                                onClick={handleReenviarCodigo}
-                                disabled={cooldownReenvio > 0}
-                            >
-                                {cooldownReenvio > 0
-                                    ? `Reenviar código em ${formatCooldown(cooldownReenvio)}`
-                                    : 'Reenviar código'}
-                            </button>
-                            <button type="button" className="button button-outline button-full mt-1" onClick={() => navigate(isCadastro ? '/login' : '/forgot-password')}>Voltar</button>
+
+                            <div className="auth-flow-body">
+                                <div className="mb-1">
+                                    <label>Código Enviado</label>
+                                    <input
+                                        type="text"
+                                        value={code}
+                                        onChange={e => setCode(e.target.value)}
+                                        className={`w-full no-field-margin ${codeError ? 'is-invalid' : ''}`}
+                                    />
+                                    {codeError && <small className="invalid-feedback d-block">{codeError}</small>}
+                                </div>
+                            </div>
+
+                            <div className="auth-flow-footer">
+                                <button type="submit" className="button button-full">Verificar</button>
+                                <div className="auth-link-row">
+                                    <button
+                                        type="button"
+                                        className="link-action button-link"
+                                        onClick={handleReenviarCodigo}
+                                        disabled={cooldownReenvio > 0}
+                                    >
+                                        {cooldownReenvio > 0
+                                            ? `Reenviar ${formatCooldown(cooldownReenvio)}`
+                                            : 'Reenviar código'}
+                                    </button>
+                                    <button type="button" className="link-action button-link" onClick={handleVoltar}>Voltar</button>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>
