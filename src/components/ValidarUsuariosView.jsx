@@ -4,6 +4,7 @@ import { extrairErro, extrairMensagem } from '../utils/apiUtils';
 import { formatPhone } from '../utils/phone';
 import LoadingWaves from './LoadingWaves';
 import MessageModal from './MessageModal';
+import ZeniteIcon from './ZeniteIcon';
 
 export default function ValidarUsuariosView({ token }) {
     const [usuarios, setUsuarios] = useState([]);
@@ -11,6 +12,7 @@ export default function ValidarUsuariosView({ token }) {
     const [loading, setLoading] = useState(false);
     const [erro, setErro] = useState('');
     const [sucesso, setSucesso] = useState('');
+    const [usuarioParaAprovar, setUsuarioParaAprovar] = useState(null);
 
     const carregarUsuariosPendentes = useCallback(async () => {
         setErro('');
@@ -36,17 +38,20 @@ export default function ValidarUsuariosView({ token }) {
         carregarUsuariosPendentes();
     }, [carregarUsuariosPendentes]);
 
-    const handleAprovar = async (usuarioId) => {
+    const handleAprovar = async () => {
+        if (!usuarioParaAprovar) return;
+
         setErro(''); setSucesso('');
         try {
-            const response = await fetch(`${getBaseUrl()}/v1/usuarios/${usuarioId}`, {
+            const response = await fetch(`${getBaseUrl()}/v1/usuarios/${usuarioParaAprovar.usuarioId}`, {
                 method: 'PATCH',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
                 const mensagem = await extrairMensagem(response);
                 if (mensagem) setSucesso(mensagem);
-                setUsuarios(prev => prev.filter(u => u.usuarioId !== usuarioId));
+                setUsuarios(prev => prev.filter(u => u.usuarioId !== usuarioParaAprovar.usuarioId));
+                setUsuarioParaAprovar(null);
             } else {
                 setErro(await extrairErro(response));
             }
@@ -54,6 +59,17 @@ export default function ValidarUsuariosView({ token }) {
             console.error(error);
         }
     };
+
+    const renderEmptyState = () => (
+        <div className="empty-state-plain validation-empty-state">
+            <div className="empty-state-icon">
+                <ZeniteIcon name="ban" size={92} strokeWidth={1.7} />
+            </div>
+            <p className="empty-state-text">
+                {usuarios.length === 0 ? 'Nenhum usuário pendente de aprovação.' : 'Nenhum resultado encontrado para a pesquisa.'}
+            </p>
+        </div>
+    );
 
     const usuariosFiltrados = usuarios.filter(user => {
         const termo = pesquisa.toLowerCase();
@@ -66,7 +82,7 @@ export default function ValidarUsuariosView({ token }) {
     });
 
     return (
-        <div className="w-full inventory-list-fixed">
+        <div className="w-full inventory-list-fixed validation-user-view">
             <div className="inventory-list-fixed-header">
                 <div className="inventory-list-header">
                     <h2 className="page-title no-margin">Usuários Pendentes</h2>
@@ -75,7 +91,7 @@ export default function ValidarUsuariosView({ token }) {
                 <div className="mb-2">
                     <input
                         type="text"
-                        placeholder="Pesquisar por nome, telefone ou unidade..."
+                        placeholder="Pesquisar ..."
                         value={pesquisa}
                         onChange={(e) => setPesquisa(e.target.value)}
                         className="w-full"
@@ -83,17 +99,13 @@ export default function ValidarUsuariosView({ token }) {
                 </div>
             </div>
 
-            <div className="inventory-list-scroll">
+            <div className="inventory-list-scroll validation-user-scroll">
                 {loading ? (
                     <LoadingWaves variant="cards" rows={3} label="Carregando usuários pendentes" className="validation-loading-grid" />
                 ) : usuariosFiltrados.length === 0 ? (
-                    <div className="validation-empty-card">
-                        <p className="empty-state-text">
-                            {usuarios.length === 0 ? 'Nenhum usuário pendente de validação.' : 'Nenhum resultado encontrado para a pesquisa.'}
-                        </p>
-                    </div>
+                    renderEmptyState()
                 ) : (
-                    <div className="row">
+                    <div className="row validation-user-grid">
                         {usuariosFiltrados.map(user => (
                             <div key={user.usuarioId} className="column-4 mb-1">
 
@@ -108,7 +120,7 @@ export default function ValidarUsuariosView({ token }) {
                                         <strong>Unidade:</strong> {user.nomeUnidadeOrganizacional || 'Sem Unidade'}
                                     </p>
 
-                                    <button className="button button-full" onClick={() => handleAprovar(user.usuarioId)}>
+                                    <button className="button button-full" onClick={() => setUsuarioParaAprovar(user)}>
                                         Aprovar Acesso
                                     </button>
                                 </div>
@@ -117,6 +129,27 @@ export default function ValidarUsuariosView({ token }) {
                     </div>
                 )}
             </div>
+
+            {usuarioParaAprovar && (
+                <div className="modal-overlay">
+                    <div className="card modal-card">
+                        <div className="modal-card-body">
+                            <h2 className="modal-title">Validar Acesso</h2>
+                            <p className="modal-description">
+                                Deseja validar o acesso do usuário {usuarioParaAprovar.nome}?
+                            </p>
+                            <div className="modal-actions">
+                                <button type="button" className="button button-outline button-flex" onClick={() => setUsuarioParaAprovar(null)}>
+                                    Cancelar
+                                </button>
+                                <button type="button" className="button button-flex" onClick={handleAprovar}>
+                                    Confirmar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {(erro || sucesso) && (
                 <MessageModal

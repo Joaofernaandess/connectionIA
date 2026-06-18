@@ -122,7 +122,7 @@
     background-color: rgba(142, 36, 170, 0.12) !important;
 }
 
-land-scape-warning-overlay {
+.landscape-warning-overlay {
     display: none;
     position: fixed;
     inset: 0;
@@ -132,7 +132,7 @@ land-scape-warning-overlay {
     justify-content: center;
 }
 
-land-scape-warning-card {
+.landscape-warning-card {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -149,7 +149,63 @@ land-scape-warning-card {
 }
 
 @media (orientation: landscape) {
-    land-scape-warning-overlay {
+    .landscape-warning-overlay {
         display: flex;
     }
+}
+
+/* Bottom Nav Bar */
+.bottom-nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background-color: var(--color-surface, #1c2340);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.5rem 1rem;
+    padding-bottom: env(safe-area-inset-bottom, 0.5rem); /* iPhone notch */
+    height: 64px;
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    background: none;
+    border: none;
+    color: var(--color-text-muted, #8a8fa8);
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: color 0.2s;
+    min-width: 64px;
+}
+
+.bottom-nav-item:hover,
+.bottom-nav-item:active {
+    color: var(--color-text, #fff);
+}
+
+.bottom-nav-center {
+    background-color: var(--zf-accent, #C9A227);
+    color: #000 !important;
+    border-radius: 50%;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    justify-content: center;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 12px rgba(201, 162, 39, 0.4);
+}
+
+/* Espaço para o conteúdo não ficar atrás do nav */
+.app-main {
+    padding-bottom: 80px;
 }

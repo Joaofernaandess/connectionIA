@@ -7,6 +7,7 @@ import { useProfileForm } from '../hooks/useProfileForm';
 import { usePwaInstall } from '../hooks/usePwaInstall';
 import AuthenticatedRoutes from '../routes/AuthenticatedRoutes';
 import { getUserFromToken } from '../utils/authUser';
+import ButtomNavBar from '../components/layout/ButtomNavBar';
 
 export default function HomePage({ token, onLogout }) {
     const usuario = useMemo(() => getUserFromToken(token), [token]);
@@ -64,6 +65,8 @@ export default function HomePage({ token, onLogout }) {
                     autoClose={8000}
                 />
             )}
+
+            <ButtomNavBar/>
         </div>
     );
 }

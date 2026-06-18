@@ -27,7 +27,7 @@ export default function EspacoList({
                 <div className="mb-2">
                     <input
                         type="text"
-                        placeholder="Pesquisar espaços..."
+                        placeholder="Pesquisar..."
                         value={pesquisa}
                         onChange={(e) => onChangePesquisa(e.target.value)}
                         className="w-full no-field-margin"

@@ -9,6 +9,8 @@ import InstallIosPage from '../pages/home/InstallIosPage';
 import ProfilePage from '../pages/home/ProfilePage';
 import ItemEstoqueDetailPage from '../pages/itemEstoque/ItemEstoqueDetailPage';
 import NovoItemEstoquePage from '../pages/itemEstoque/NovoItemEstoquePage';
+//import HitoricoPage from '../pages/home/HistoricoPage';
+import  UserProfilePage from '../pages/home/UserProfilePage';
 
 export default function AuthenticatedRoutes({
     fieldErrors,
@@ -78,6 +80,14 @@ export default function AuthenticatedRoutes({
                 }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
+            <Route 
+                path="perfil-usuario"
+                element={<UserPRofilePage Token={token} formData={formData} />}
+            />
+            <Route
+                path="historico"
+                element={<HistoricoPage token={token} unidadeOrganizacionalId={unidadeOrganizacionalId} />}
+            />
         </Routes>
     );
 }

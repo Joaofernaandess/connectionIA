@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MessageModal from './components/MessageModal';
 import AppRoutes from './routes/AppRoutes';
-import landscapeWarning from './components/LandscapeWarning';
+import LandscapeWarning from './components/LandscapeWarning';
 
 export default function App() {
     const navigate = useNavigate();
@@ -44,6 +44,7 @@ export default function App() {
     return (
         <>
             <LandscapeWarning />
+            
             <AppRoutes
                 token={token}
                 onLogin={handleLogin}
@@ -53,10 +54,10 @@ export default function App() {
 
             {sessionExpiredMessage && (
                 <MessageModal
-                    type="error"
-                    message={sessionExpiredMessage}
-                    onClose={handleSessionExpiredClose}
-                    autoClose={8000}
+                type="error"
+                message={sessionExpiredMessage}
+                onClose={handleSessionExpiredClose}
+                autoClose={8000}
                 />
             )}
         </>
