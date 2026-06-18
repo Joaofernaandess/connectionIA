@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ZeniteIcon from '../../componentes/ZeniteIcon';
-import { getUserFromtoken } from '../../utils/authUser';
+import ZeniteIcon from '../../components/ZeniteIcon';
+import { getUserFromToken } from '../../utils/authUser';
 
 export default function UserProfilePage ({ token, formData }) {
     const navigate = useNavigate();
-    const ususario = useMemo(() => getUserFromToken(token), [token]);
+    const usuario = useMemo(() => getUserFromToken(token), [token]);
 
     return (
         <div className="user-profile-page">
