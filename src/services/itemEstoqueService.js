@@ -57,7 +57,7 @@ export const transferirItemEstoque = ({ token, itemEstoqueId, novoEspacoId, usua
     encryptedFetch(`${getBaseUrl()}/v1/itens-estoque/${itemEstoqueId}/transferir`, {
         method: 'PATCH',
         headers: authHeaders(token),
-        payload: { novoEspacoId, usuarioId }
+        payload: { novoEspacoId: novoEspacoId || null, usuarioId }
     })
 );
 

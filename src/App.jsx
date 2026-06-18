@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MessageModal from './components/MessageModal';
 import AppRoutes from './routes/AppRoutes';
+import landscapeWarning from './components/LandscapeWarning';
 
 export default function App() {
     const navigate = useNavigate();
@@ -42,6 +43,7 @@ export default function App() {
 
     return (
         <>
+            <LandscapeWarning />
             <AppRoutes
                 token={token}
                 onLogin={handleLogin}

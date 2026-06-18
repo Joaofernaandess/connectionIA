@@ -4,7 +4,8 @@ import { listarEspacos } from '../services/espacoService';
 import {
     excluirItemEstoque,
     listarItensEstoque,
-    movimentarItemEstoque
+    movimentarItemEstoque,
+    transferirItemEstoque
 } from '../services/itemEstoqueService';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../utils/apiUtils';
 import {
@@ -17,6 +18,7 @@ import MessageModal from './MessageModal';
 import ExcluirItemModal from './itemEstoque/ExcluirItemModal';
 import ItemEstoqueList from './itemEstoque/ItemEstoqueList';
 import MovimentarEstoqueModal from './itemEstoque/MovimentarEstoqueModal';
+import TransferirItemModal from './itemEstoque/TransferirItemModal';
 
 export default function ItemEstoqueView({ token, unidadeOrganizacionalId, usuarioId }) {
     const navigate = useNavigate();
@@ -31,6 +33,8 @@ export default function ItemEstoqueView({ token, unidadeOrganizacionalId, usuari
     const [itemParaExcluir, setItemParaExcluir] = useState(null);
     const [excluindoItemId, setExcluindoItemId] = useState(null);
     const [itemParaMovimentar, setItemParaMovimentar] = useState(null);
+    const [itemParaTransferir, setItemParaTransferir] = useState(null);
+    const [novoEspacoId, setNovoEspacoId] = useState('');
     const [movimentacaoData, setMovimentacaoData] = useState({ tipoMovimentacao: 1, quantidadeMovimento: '' });
 
     const carregarDados = useCallback(async () => {
@@ -117,8 +121,8 @@ export default function ItemEstoqueView({ token, unidadeOrganizacionalId, usuari
 
                 const quantidadeAtual = parseQuantity(itemParaMovimentar.quantidade);
                 const novaQuantidade = payload.tipoMovimentacao === 1
-                    ? quantidadeAtual + payload.quantidade
-                    : quantidadeAtual - payload.quantidade;
+                    ? quantidadeAtual + payload.quantidadeMovimento
+                    : quantidadeAtual - payload.quantidadeMovimento;
 
                 setItens(prev => prev.map(item => (
                     item.itemEstoqueId === itemParaMovimentar.itemEstoqueId
@@ -163,6 +167,40 @@ export default function ItemEstoqueView({ token, unidadeOrganizacionalId, usuari
         }
     };
 
+    const handleTransferir = async (event) => {
+        event.preventDefault();
+        if (!itemParaTransferir) return;
+
+        setErro('');
+        setSucesso('');
+
+        try {
+            const response = await transferirItemEstoque({
+                token,
+                itemEstoqueId: itemParaTransferir.itemEstoqueId,
+                novoEspacoId,
+                usuarioId
+            });
+
+            if (response.ok) {
+                const mensagem = await extrairMensagem(response);
+                setItens(prev => prev.map(item => (
+                    item.itemEstoqueId === itemParaTransferir.itemEstoqueId
+                        ? { ...item, espacoId: novoEspacoId }
+                        : item
+                )));
+                setItemParaTransferir(null);
+                setNovoEspacoId('');
+                if (mensagem) setSucesso(mensagem);
+            } else {
+                const mensagem = await extrairErro(response);
+                setErro(mensagem);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     return (
         <>
             <ItemEstoqueList
@@ -175,6 +213,10 @@ export default function ItemEstoqueView({ token, unidadeOrganizacionalId, usuari
                 onEditarItem={(item) => navigate(`/itens-estoque/${item.itemEstoqueId}`)}
                 onExcluirItem={setItemParaExcluir}
                 onHistoricoItem={(item) => navigate(`/itens-estoque/${item.itemEstoqueId}?secao=historico`)}
+                onTransferirItem={(item) => {
+                    setItemParaTransferir(item);
+                    setNovoEspacoId('');
+                }}
                 pesquisa={pesquisa}
                 excluindoItemId={excluindoItemId}
                 messageModal={messageModal}
@@ -195,6 +237,20 @@ export default function ItemEstoqueView({ token, unidadeOrganizacionalId, usuari
                 <ExcluirItemModal
                     onClose={() => setItemParaExcluir(null)}
                     onConfirm={handleExcluir}
+                />
+            )}
+
+            {itemParaTransferir && (
+                <TransferirItemModal
+                    espacos={espacos}
+                    item={itemParaTransferir}
+                    novoEspacoId={novoEspacoId}
+                    onChange={setNovoEspacoId}
+                    onClose={() => {
+                        setItemParaTransferir(null);
+                        setNovoEspacoId('');
+                    }}
+                    onSubmit={handleTransferir}
                 />
             )}
         </>

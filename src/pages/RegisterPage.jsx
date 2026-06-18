@@ -105,6 +105,7 @@ export default function RegisterPage() {
 
                                 <PasswordInput
                                     label="Confirmar Senha"
+                                    placeholder="Confirmar"
                                     value={formData.confirmaSenha}
                                     onChange={e => setFormData({ ...formData, confirmaSenha: e.target.value })}
                                     error={!!(fieldErrors.ConfirmaSenha || fieldErrors.confirmaSenha)}

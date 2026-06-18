@@ -9,8 +9,6 @@ export const useProfileForm = ({ token, usuario }) => {
     const [formData, setFormData] = useState({
         nome: usuario.nome,
         username: usuario.username,
-        senha: '',
-        confirmaSenha: '',
         unidadeOrganizacionalId: usuario.unidadeOrganizacionalId
     });
     const [erro, setErro] = useState('');
@@ -23,18 +21,11 @@ export const useProfileForm = ({ token, usuario }) => {
         setSucesso('');
         setFieldErrors({});
 
-        const payload = {
-            nome: formData.nome
-        };
-
-        if (formData.senha || formData.confirmaSenha) {
-            payload.senha = formData.senha;
-            payload.confirmaSenha = formData.confirmaSenha;
-        }
+        const payload = { nome: formData.nome };
 
         try {
-            const response = await fetch(`${getBaseUrl()}/v1/usuarios/${usuario.usuarioId}`, {
-                method: 'PUT',
+            const response = await fetch(`${getBaseUrl()}/v1/usuarios/${usuario.usuarioId}/nome`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -45,7 +36,6 @@ export const useProfileForm = ({ token, usuario }) => {
             if (response.ok) {
                 const mensagem = await extrairMensagem(response);
                 if (mensagem) setSucesso(mensagem);
-                setFormData(prev => ({ ...prev, senha: '', confirmaSenha: '' }));
             } else if (response.status === 400) {
                 await aplicarErrosCampos(response, setFieldErrors, setErro);
             } else {
@@ -61,7 +51,6 @@ export const useProfileForm = ({ token, usuario }) => {
         setErro('');
         setSucesso('');
         setFieldErrors({});
-        setFormData(prev => ({ ...prev, senha: '', confirmaSenha: '' }));
         navigate('/');
     };
 

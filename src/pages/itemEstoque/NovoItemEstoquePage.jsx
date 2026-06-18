@@ -62,9 +62,9 @@ export default function NovoItemEstoquePage({ token, unidadeOrganizacionalId }) 
             <form className="detail-form-layout" onSubmit={handleSubmit} noValidate>
                 <div className="card detail-card detail-form-scroll-card">
                     <div className="detail-card-body">
-                        <div className="row">
+                        <div className="row detail-form-fields">
                             <div className="column-12 mb-1">
-                                <label className={`label-sm ${fieldErrors.Descricao ? 'error' : ''}`}>Descrição do Produto</label>
+                                <label className="label-sm">Descrição</label>
                                 <input
                                     type="text"
                                     value={formData.descricao}
@@ -75,7 +75,7 @@ export default function NovoItemEstoquePage({ token, unidadeOrganizacionalId }) 
                             </div>
 
                             <div className="column-12 mb-1">
-                                <span className={`label-sm ${fieldErrors.TipoUnidadeMedida ? 'error' : 'text-muted'}`}>Unidade</span>
+                                <span className="label-sm text-muted">Unidade</span>
                                 <div className="space-items-unit-filter" role="radiogroup" aria-label="Unidade de medida">
                                     {Object.entries(TIPO_UNIDADE).map(([key, val]) => (
                                         <label key={key} className="space-items-unit-option">
@@ -94,7 +94,7 @@ export default function NovoItemEstoquePage({ token, unidadeOrganizacionalId }) 
                             </div>
 
                             <div className="column-12 mb-1">
-                                <label className={`label-sm ${fieldErrors.Quantidade ? 'error' : 'text-muted'}`}>Saldo Inicial</label>
+                                <label className="label-sm text-muted">Saldo Inicial</label>
                                 <input
                                     type="text"
                                     inputMode="numeric"

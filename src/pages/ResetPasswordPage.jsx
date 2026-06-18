@@ -110,7 +110,7 @@ export default function ResetPasswordPage() {
                     type="success"
                     message={successMessage}
                     onClose={() => navigate('/login')}
-                    buttonLabel="Ir para Login"
+                    buttonLabel="Login"
                     autoClose={8000}
                 />
             )}

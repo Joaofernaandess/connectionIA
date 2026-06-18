@@ -46,7 +46,7 @@ export const criarPayloadItemEstoque = ({ unidadeOrganizacionalId, formData, qua
 });
 
 export const criarPayloadMovimentacao = ({ movimentacaoData, usuarioId }) => ({
-    quantidade: parseQuantity(movimentacaoData.quantidadeMovimento),
+    quantidadeMovimento: parseQuantity(movimentacaoData.quantidadeMovimento),
     tipoMovimentacao: parseInt(movimentacaoData.tipoMovimentacao),
     usuarioId: usuarioId || EMPTY_GUID
 });

@@ -20,6 +20,7 @@ export default function EspacoDetail({
     onHistoricoItem,
     onNovoItem,
     onAbrirMovimentacaoItem,
+    onTransferirItem,
     onCloseDeleteItem,
     onConfirmDeleteItem,
     onOpenDelete,
@@ -79,6 +80,7 @@ export default function EspacoDetail({
                         onEditarItem={onEditarItem}
                         onExcluirItem={onExcluirItem}
                         onHistoricoItem={onHistoricoItem}
+                        onTransferirItem={onTransferirItem}
                         excluindoItemId={excluindoItemId}
                     />
                 </>

@@ -27,7 +27,6 @@ export default function ItemEstoqueDetail({
     onConfirmarEdicao,
     onExcluir,
     onOpenDelete,
-    onOpenTransferir,
     onSubmitMovimentar,
     onSubmitTransferir,
     onVoltar,
@@ -37,25 +36,26 @@ export default function ItemEstoqueDetail({
     messageModal
 }) {
     const isHistoricoMode = mode === 'historico';
+    const viewClassName = `detail-view w-full ${isHistoricoMode ? 'detail-history-view' : 'detail-form-view'}`;
 
     return (
-        <div className="detail-view w-full">
+        <div className={viewClassName}>
             <div className="detail-heading">
                 <h2 className="no-margin">{isHistoricoMode ? 'Histórico do Item' : 'Detalhes do Item'}</h2>
             </div>
 
             {!isHistoricoMode && (
-                <>
-                    <div className="card detail-card">
+                <div className="detail-form-layout">
+                    <div className="card detail-card detail-form-scroll-card">
                         <div className="detail-card-body">
-                            <div className="row">
+                            <div className="row detail-form-fields">
                                 <div className="column-4 mb-1">
-                                    <label className={`label-sm ${fieldErrors.Descricao ? 'error' : ''}`}>Descrição do Produto</label>
+                                    <label className="label-sm text-muted">Descrição</label>
                                     <input type="text" value={formEdicao.descricao} onChange={e => onChangeFormEdicao({ ...formEdicao, descricao: e.target.value })} className={getInputClassName(fieldErrors.Descricao)} />
                                     {fieldErrors.Descricao && <small className="invalid-feedback d-block">{fieldErrors.Descricao}</small>}
                                 </div>
                                 <div className="column-4 mb-1">
-                                    <span className={`label-sm ${fieldErrors.TipoUnidadeMedida ? 'error' : 'text-muted'}`}>Unidade</span>
+                                    <span className="label-sm text-muted">Unidade</span>
                                     <div className="space-items-unit-filter" role="radiogroup" aria-label="Unidade de medida">
                                         {Object.entries(TIPO_UNIDADE).map(([key, val]) => (
                                             <label key={key} className="space-items-unit-option">
@@ -74,16 +74,13 @@ export default function ItemEstoqueDetail({
                                 </div>
                                 <div className="column-4 mb-1">
                                     <label className="label-sm text-muted">Saldo Atual</label>
-                                    <input type="text" value={formEdicao.quantidade} className="w-full no-field-margin" readOnly />
+                                    <input type="text" value={formEdicao.quantidade} className="w-full no-field-margin input-readonly" readOnly />
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <button className="button button-outline button-full mb-2" onClick={onOpenTransferir}>
-                        Transferir item para outro espaço
-                    </button>
-                </>
+                </div>
             )}
 
             {isHistoricoMode && (
@@ -119,6 +116,7 @@ export default function ItemEstoqueDetail({
             {showTransferirModal && (
                 <TransferirItemModal
                     espacos={espacos}
+                    fieldErrors={fieldErrors}
                     item={itemAtivo}
                     novoEspacoId={novoEspacoId}
                     onChange={onChangeNovoEspaco}

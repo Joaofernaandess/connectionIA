@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MessageModal from '../../components/MessageModal';
-import ZeniteIcon from '../../components/ZeniteIcon';
 import { criarEspaco } from '../../services/espacoService';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../../utils/apiUtils';
 import { criarPayloadEspaco } from '../../utils/espacoViewModel';
@@ -74,11 +73,9 @@ export default function NovoEspacoPage({ token, unidadeOrganizacionalId }) {
 
                 <div className="detail-action-bar detail-action-bar-two">
                     <button type="button" className="button button-outline" onClick={() => navigate('/espacos')}>
-                        <ZeniteIcon name="arrow-left" />
                         <span className="button-icon-text">Voltar</span>
                     </button>
                     <button type="submit" className="button">
-                        <ZeniteIcon name="save" size={22} />
                         <span className="button-icon-text">Salvar</span>
                     </button>
                 </div>

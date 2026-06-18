@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import ZeniteIcon from '../ZeniteIcon';
 
 const isIOS = () => {
     if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
@@ -24,6 +25,10 @@ export default function Sidebar({ isAdmin, isInstalled, onInstallClick, onLogout
             </div>
 
             <aside className="sidebar">
+                <button type="button" className="sidebar-close-icon" onClick={closeMenu} aria-label="Fechar menu">
+                    <ZeniteIcon name="x" size={22} />
+                </button>
+
                 <div className="sidebar-body">
                     <div className="sidebar-brand-block">
                         <h3 className="sidebar-title">Zênite Tecnologia</h3>
@@ -32,7 +37,6 @@ export default function Sidebar({ isAdmin, isInstalled, onInstallClick, onLogout
                     <div className="sidebar-nav">
                         <NavLink to="/" end onClick={closeMenu}>Início</NavLink>
                         <NavLink to="/espacos" onClick={closeMenu}>Espaços</NavLink>
-                        <NavLink to="/itens-estoque" onClick={closeMenu}>Itens de Estoque</NavLink>
 
                         {isAdmin && (
                             <NavLink to="/aprovar-usuarios" onClick={closeMenu}>Aprovar Usuários</NavLink>

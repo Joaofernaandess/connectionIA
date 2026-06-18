@@ -4,16 +4,13 @@ import { formatQuantity, formatQuantityMasked } from '../../utils/quantity';
 import LoadingWaves from '../LoadingWaves';
 import ZeniteIcon from '../ZeniteIcon';
 
-
 const TIPOS_UNIDADE_FILTRO = Object.entries(TIPO_UNIDADE).map(([value, label]) => ({
     value: Number(value),
     label
 }));
 const TIPO_UNIDADE_LITROS = 1;
 
-
 const getItemDate = (item) => item.dataCadastro || item.dataCriacao || item.criadoEm || item.createdAt || item.dataHoraCadastro;
-
 
 const formatItemDate = (item) => {
     const rawDate = getItemDate(item);
@@ -31,7 +28,6 @@ const formatItemDate = (item) => {
     }).format(date);
 };
 
-
 export default function ItemEstoqueList({
     getNomeEspaco,
     itens,
@@ -42,6 +38,7 @@ export default function ItemEstoqueList({
     onEditarItem,
     onExcluirItem,
     onHistoricoItem,
+    onTransferirItem,
     pesquisa,
     excluindoItemId,
     messageModal
@@ -49,9 +46,8 @@ export default function ItemEstoqueList({
     const [tipoUnidadeSelecionada, setTipoUnidadeSelecionada] = useState(TIPO_UNIDADE_LITROS);
     const [menuAbertoId, setMenuAbertoId] = useState(null);
     const [menuDirection, setMenuDirection] = useState('down');
-    const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 220, triggerLeft: 0, triggerWidth: 0, triggerBottom: 0 });
+    const [menuPos, setMenuPos] = useState({ top: 0, button: 'auto', left: 0, width: 220, triggerLeft: 0, triggerWidth: 0, triggerBottom: 0 });
     const menuTriggerRefs = useRef({});
-
 
     useEffect(() => {
         if (!menuAbertoId) return;
@@ -65,10 +61,17 @@ export default function ItemEstoqueList({
             }
         };
 
-        document.addEventListener('pointerdown', fecharMenuAoClicarFora);
-        return () => document.removeEventListener('pointerdown', fecharMenuAoClicarFora);
-    }, [menuAbertoId]);
+        const fecharMenuAoScroll = () => setMenuAbertoId(null);
+        const scrollContainer = document.querySelector('.inventory-list-scroll');
 
+        document.addEventListener('pointerdown', fecharMenuAoClicarFora);
+        scrollContainer?.addEventListener('scroll', fecharMenuAoScroll, { passive: true });
+
+        return () => {
+            document.removeEventListener('pointerdown', fecharMenuAoClicarFora);
+            scrollContainer?.removeEventListener('scroll', fecharMenuAoScroll);
+        };
+    }, [menuAbertoId]);
 
     const itensFiltrados = useMemo(() => {
         if (!tipoUnidadeSelecionada) return itens;
@@ -79,8 +82,7 @@ export default function ItemEstoqueList({
     const totalFiltrado = useMemo(() => {
         if (!tipoUnidadeSelecionada) return itensFiltrados.length;
         return itensFiltrados.reduce((total, item) => total + Number(item.quantidade || 0), 0);
-    }, [itensFiltrados]);
-
+    }, [itensFiltrados, tipoUnidadeSelecionada]);
 
     const unidadeSelecionadaLabel = getTipoUnidadeSigla(tipoUnidadeSelecionada);
 
@@ -111,37 +113,41 @@ export default function ItemEstoqueList({
                     </div>
                 </div>
 
-                <label className="space-items-search">
-                    <ZeniteIcon name="search" size={24} />
-                    <input
-                        type="text"
-                        value={pesquisa}
-                        onChange={event => onChangePesquisa(event.target.value)}
-                        placeholder="Pesquisar ..."
-                        className="space-items-search-input"
-                    />
-                </label>
-
-                <div className="space-items-unit-filter" role="radiogroup" aria-label="Filtrar por unidade de medida">
-                    {TIPOS_UNIDADE_FILTRO.map(unidade => (
-                        <label key={unidade.value} className="space-items-unit-option">
+                <details className="space-items-filter-accordion" open>
+                    <summary>Filtros</summary>
+                    <div className="space-items-filter-content">
+                        <label className="space-items-search">
+                            <ZeniteIcon name="search" size={24} />
                             <input
-                                type="radio"
-                                name="tipoUnidadeMedidaItensEstoque"
-                                value={unidade.value}
-                                checked={Number(tipoUnidadeSelecionada) === unidade.value}
-                                onChange={() => setTipoUnidadeSelecionada(unidade.value)}
+                                type="text"
+                                value={pesquisa}
+                                onChange={event => onChangePesquisa(event.target.value)}
+                                placeholder="Pesquisar ..."
+                                className="space-items-search-input"
                             />
-                            <span>{unidade.label}</span>
                         </label>
-                    ))}
-                </div>
-            </div>
 
+                        <div className="space-items-unit-filter" role="radiogroup" aria-label="Filtrar por unidade de medida">
+                            {TIPOS_UNIDADE_FILTRO.map(unidade => (
+                                <label key={unidade.value} className="space-items-unit-option">
+                                    <input
+                                        type="radio"
+                                        name="tipoUnidadeMedidaItensEstoque"
+                                        value={unidade.value}
+                                        checked={Number(tipoUnidadeSelecionada) === unidade.value}
+                                        onChange={() => setTipoUnidadeSelecionada(unidade.value)}
+                                    />
+                                    <span>{unidade.label}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                </details>
+            </div>
 
             <div className={`inventory-list-scroll space-items-manager ${menuAbertoId ? 'space-items-manager-open' : ''}`}>
                 {loading ? (
-                    <LoadingWaves variant="cards" rows={4} label="Carregando itens" />
+                    <LoadingWaves variant="cards" rows={4} label="Carregando itens" className="space-items-list" />
                 ) : itens.length === 0 ? (
                     renderEmptyState('Nenhum item de estoque cadastrado.')
                 ) : itensFiltrados.length === 0 ? (
@@ -179,19 +185,40 @@ export default function ItemEstoqueList({
                                                 const trigger = menuTriggerRefs.current[novoId];
                                                 if (trigger) {
                                                     const rect = trigger.getBoundingClientRect();
-                                                    const spaceBelow = (window.visualViewport?.height ?? window.innerHeight) - rect.bottom;
-                                                    const openUp = spaceBelow < 260;
-                                                    const menuWidth = 220;
-                                                    const leftPos = Math.max(4, rect.right - menuWidth);
+                                                    const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+                                                    const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+                                                    const menuWidth = Math.min(200, viewportWidth - 16);
+                                                    const menuHeight = 310;
 
-                                                    setMenuDirection(openUp ? 'up' : 'down');
-                                                   setMenuPos({
-                                                        top: openUp ? rect.top - 4 : rect.bottom + 4,
+                                                    const spaceBelow = viewportHeight - rect.bottom - 8;
+                                                    const spaceAbove = rect.top - 8;
+
+                                                    const leftPos = Math.max(8, Math.min(rect.right - menuWidth, viewportWidth - menuWidth - 8));
+
+                                                    let direction;
+                                                    let topPos = undefined;
+                                                    let bottomPos = undefined;
+
+                                                    if (spaceBelow >= menuHeight) {
+                                                        direction = 'down';
+                                                        topPos = rect.bottom + 4;
+                                                   } else if (spaceAbove >= menuHeight) {
+                                                        direction = 'up';
+                                                        bottomPos = viewportHeight - rect.top + 4;
+                                                    } else {
+                                                        direction = 'center';
+                                                        topPos = Math.max(8, (viewportHeight - menuHeight) / 2);
+                                                    }
+
+                                                    setMenuDirection(direction);
+                                                    setMenuPos({
+                                                        top: topPos,
+                                                        bottom: bottomPos,
                                                         left: leftPos,
                                                         width: menuWidth,
                                                         triggerLeft: rect.left,
                                                         triggerWidth: rect.width,
-                                                        triggerBottom: rect.bottom
+                                                        triggerBottom: rect.bottom,
                                                     });
                                                 }
                                             }
@@ -208,8 +235,7 @@ export default function ItemEstoqueList({
                 )}
             </div>
 
-
-           {menuAbertoId && (() => {
+            {menuAbertoId && (() => {
                 const item = itensFiltrados.find(i => i.itemEstoqueId === menuAbertoId);
                 if (!item) return null;
 
@@ -218,44 +244,51 @@ export default function ItemEstoqueList({
                         className={`space-item-actions-menu space-item-actions-menu-${menuDirection}`}
                         style={{
                             position: 'fixed',
-                            top: menuDirection === 'down' ? menuPos.top : 'auto',
-                            bottom: menuDirection === 'up' ? window.innerHeight - menuPos.triggerBottom + 4 : 'auto',
+                            top: menuPos.top ?? 'auto',
+                            bottom: menuPos.bottom ?? 'auto',
                             left: menuPos.left,
                             width: menuPos.width,
                             zIndex: 9999,
                             '--arrow-offset': `${arrowOffsetLeft}px`,
-                            overflow: 'visible'
+                            ...(menuDirection === 'down' && {
+                                maxHeight: `calc(100dvh - ${menuPos.top ?? 0}px - 8px)`,
+                                overflowY: 'auto',
+                            }),
                         }}
                     >
-                        <button type="button" className="space-item-menu-action space-item-menu-entry" onClick={() => { setMenuAbertoId(null); onAbrirMovimentacao(item, 1); }}>
+
+                        <button type="button" className="button button-sm space-item-action space-item-menu-entry" onClick={() => { setMenuAbertoId(null); onAbrirMovimentacao(item, 1); }}>
                             <ZeniteIcon name="plus" size={22} />
                             <span>Entrada</span>
                         </button>
-                        <button type="button" className="space-item-menu-action space-item-menu-exit" onClick={() => { setMenuAbertoId(null); onAbrirMovimentacao(item, 2); }}>
+                        <button type="button" className="button button-sm space-item-action space-item-menu-exit" onClick={() => { setMenuAbertoId(null); onAbrirMovimentacao(item, 2); }}>
                             <ZeniteIcon name="minus" size={22} />
                             <span>Saída</span>
                         </button>
+                        <button type="button" className="button button-sm space-item-action space-item-menu-transfer" onClick={() => { setMenuAbertoId(null); onTransferirItem(item); }}>
+                            <ZeniteIcon name="transfer" size={22} />
+                            <span>Transferir</span>
+                        </button>
                         <button
                             type="button"
-                            className="space-item-menu-action space-item-menu-delete"
+                            className="button button-sm space-item-action space-item-menu-delete"
                             onClick={() => { setMenuAbertoId(null); onExcluirItem(item); }}
                             disabled={excluindoItemId === item.itemEstoqueId}
                         >
                             <ZeniteIcon name="trash" size={22} />
                             <span>Excluir</span>
                         </button>
-                        <button type="button" className="space-item-menu-action space-item-menu-edit" onClick={() => { setMenuAbertoId(null); onEditarItem(item); }}>
+                        <button type="button" className="button button-sm space-item-action space-item-menu-edit" onClick={() => { setMenuAbertoId(null); onEditarItem(item); }}>
                             <ZeniteIcon name="pencil" size={22} />
                             <span>Editar</span>
                         </button>
-                        <button type="button" className="space-item-menu-action space-item-menu-history" onClick={() => { setMenuAbertoId(null); onHistoricoItem(item); }}>
+                        <button type="button" className="button button-sm space-item-action space-item-menu-history" onClick={() => { setMenuAbertoId(null); onHistoricoItem(item); }}>
                             <ZeniteIcon name="clock" size={22} />
                             <span>Histórico</span>
                         </button>
                     </div>
                 );
             })()}
-
 
             <div className="detail-action-bar detail-action-bar-one">
                 <button className="button" onClick={onAbrirNovo}>
@@ -268,4 +301,4 @@ export default function ItemEstoqueList({
             {messageModal}
         </div>
     );
-}   
+}

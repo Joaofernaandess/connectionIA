@@ -25,16 +25,18 @@ export default function InstallIosPage() {
         return () => observer.disconnect();
     }, []);
 
-    const themedImage = (name) => useLightTutorialImages ? `/${name}-white.jpeg` : `/${name}.jpeg`;
+    const themedImage = (name) => useLightTutorialImages ? `/${name}-white.png` : `/${name}.png`;
 
     if (android) {
         return (
             <div className="install-panel">
-                <h3 className="install-title mb-2">Instale o Estoque Certo</h3>
+                <div className="mb-3">
+                    <h2 className="page-title no-margin mb-1">Instale o Estoque Certo</h2>
 
-                <h4 className="section-title-reset mb-1">Instalação no Android</h4>
+                    <h3 className="section-title-reset mb-1">Instalação no Android</h3>
 
-                <p className="empty-state-text mb-2">Toque no menu do navegador e escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.</p>
+                    <p className="empty-state-text mb-0">Toque no menu do navegador e escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.</p>
+                </div>
 
                 <p className="empty-state-text mb-3">Se essa opção não aparecer, atualize a página e tente novamente.</p>
 
@@ -47,11 +49,13 @@ export default function InstallIosPage() {
 
     return (
         <div className="install-panel">
-            <h3 className="install-title mb-2">Instale o Estoque Certo</h3>
+            <div className="mb-3">
+                <h2 className="page-title no-margin mb-1">Instale o Estoque Certo</h2>
 
-            <h4 className="section-title-reset mb-1">Role a tela e siga o tutorial</h4>
+                <h3 className="section-title-reset mb-1">Role a tela e siga o tutorial</h3>
 
-            <p className="empty-state-text mb-3">Para instalar o aplicativo, toque nos <b>...</b></p>
+                <p className="empty-state-text mb-0">Para instalar o aplicativo, toque nos <b>...</b></p>
+            </div>
 
             <img src={themedImage('pg1')} alt="Tutorial de instalação 1" className="install-step-image" />
 
@@ -65,7 +69,7 @@ export default function InstallIosPage() {
 
             <p>Depois clique em <b>"Adicionar"</b> </p>
 
-            <img src="/pg4.jpeg" alt="Tutorial de instalação 4" className="install-step-image" />
+            <img src="/pg4.png" alt="Tutorial de instalação 4" className="install-step-image" />
 
             <p> assim o aplicativo será adicionado à sua tela de início.</p>
 

@@ -37,7 +37,7 @@ export default function EspacoList({
 
             <div className="inventory-list-scroll">
                 {loading ? (
-                    <LoadingWaves variant="cards" rows={4} label="Carregando espaços" />
+                    <LoadingWaves variant="cards" rows={4} label="Carregando espaços" className="inventory-grid" />
                 ) : espacosFiltrados.length === 0 ? (
                     espacos.length === 0 ? (
                         <div className="empty-state-plain">

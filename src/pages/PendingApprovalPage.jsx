@@ -22,7 +22,7 @@ export default function PendingApprovalPage() {
                         </p>
 
                         <p className="pending-approval-description">
-                            Isso pode levar até algumas horas.
+                            Isso pode levar algumas horas.
                         </p>
                         <button
                             type="button"

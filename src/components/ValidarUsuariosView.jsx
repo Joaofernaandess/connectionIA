@@ -85,7 +85,7 @@ export default function ValidarUsuariosView({ token }) {
 
             <div className="inventory-list-scroll">
                 {loading ? (
-                    <LoadingWaves variant="cards" rows={3} label="Carregando usuários pendentes" />
+                    <LoadingWaves variant="cards" rows={3} label="Carregando usuários pendentes" className="validation-loading-grid" />
                 ) : usuariosFiltrados.length === 0 ? (
                     <div className="validation-empty-card">
                         <p className="empty-state-text">

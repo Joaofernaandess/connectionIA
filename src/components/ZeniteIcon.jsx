@@ -6,6 +6,7 @@ import Clock from 'lucide-react/dist/esm/icons/clock.mjs';
 import Ellipsis from 'lucide-react/dist/esm/icons/ellipsis.mjs';
 import Menu from 'lucide-react/dist/esm/icons/menu.mjs';
 import Moon from 'lucide-react/dist/esm/icons/moon.mjs';
+import MoveRight from 'lucide-react/dist/esm/icons/move-right.mjs';
 import Pencil from 'lucide-react/dist/esm/icons/pencil.mjs';
 import Rocket from 'lucide-react/dist/esm/icons/rocket.mjs';
 import Search from 'lucide-react/dist/esm/icons/search.mjs';
@@ -13,6 +14,8 @@ import Sun from 'lucide-react/dist/esm/icons/sun.mjs';
 import Trash2 from 'lucide-react/dist/esm/icons/trash-2.mjs';
 import Save from 'lucide-react/dist/esm/icons/save.mjs';
 import Arrowleft from 'lucide-react/dist/esm/icons/arrow-left.mjs';
+import X from 'lucide-react/dist/esm/icons/x.mjs';
+import RotateCcw  from 'lucide-react/dist/esm/icons/rotate-ccw.mjs';
 
 const ICONS = {
     ban: Ban,
@@ -21,6 +24,7 @@ const ICONS = {
     ellipsis: Ellipsis,
     menu: Menu,
     moon: Moon,
+    transfer: MoveRight,
     minus: CircleMinus,
     pencil: Pencil,
     plus: CirclePlus,
@@ -29,7 +33,9 @@ const ICONS = {
     sun: Sun,
     save: Save,
     trash: Trash2,
-    'arrow-left': Arrowleft
+    'arrow-left': Arrowleft,
+    x: X,
+    'rotate-ccw': RotateCcw
 };
 
 export default function ZeniteIcon({ name, className = '', size = 20, strokeWidth = 2.25 }) {

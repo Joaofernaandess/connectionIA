@@ -1,7 +1,14 @@
-import { maskQuantityInput } from '../../utils/quantity';
+import { maskQuantityInputFixed3 } from '../../utils/quantity';
 import ZeniteIcon from '../ZeniteIcon';
 
 const getInputClassName = (isError) => `w-full no-field-margin ${isError ? 'is-invalid' : ''}`;
+
+const maskMovementQuantity = (value) => {
+    const digits = String(value ?? '').replace(/\D/g, '');
+    if (!digits) return '';
+
+    return maskQuantityInputFixed3(digits);
+};
 
 export default function MovimentarEstoqueModal({
     fieldErrors,
@@ -36,7 +43,8 @@ export default function MovimentarEstoqueModal({
                                 type="text"
                                 inputMode="decimal"
                                 value={movimentacaoData.quantidadeMovimento}
-                                onChange={e => onChange({ ...movimentacaoData, quantidadeMovimento: maskQuantityInput(e.target.value) })}
+                                onChange={e => onChange({ ...movimentacaoData, quantidadeMovimento: maskMovementQuantity(e.target.value) })}
+                                placeholder="0,000"
                                 className={getInputClassName(fieldErrors.QuantidadeMovimento)}
                             />
                             {fieldErrors.QuantidadeMovimento && <small className="invalid-feedback d-block">{fieldErrors.QuantidadeMovimento}</small>}

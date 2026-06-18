@@ -1,6 +1,7 @@
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from 'chart.js';
 import { useEffect, useMemo, useState } from 'react';
 import { Doughnut } from 'react-chartjs-2';
+import { formatQuantityMasked } from '../../utils/quantity';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -34,7 +35,7 @@ const LIGHT_PALETTE = [
   '#E5E7EB',
 ];
 
-export default function PizzaDashboardChart({ data, theme = 'dark' }) {
+export default function PizzaDashboardChart({ data, theme = 'dark', unidade = 'L' }) {
   const [hiddenItems, setHiddenItems] = useState({});
   const [outlinedItems, setOutlinedItems] = useState({});
 
@@ -79,13 +80,13 @@ export default function PizzaDashboardChart({ data, theme = 'dark' }) {
         },
         tooltip: {
           callbacks: {
-            label: (ctx) => ` ${ctx.label}: ${ctx.parsed} litros`,
+            label: (ctx) => ` ${ctx.label}: ${formatQuantityMasked(ctx.parsed)} ${unidade}`,
           },
         },
       },
       cutout: '62%',
     };
-  }, []);
+  }, [unidade]);
 
   const handleColorClick = (event, index) => {
     event.preventDefault();

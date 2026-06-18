@@ -170,6 +170,7 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
         event.preventDefault();
         setErro('');
         setSucesso('');
+        setFieldErrors({});
 
         try {
             const response = await transferirItemEstoque({ token, itemEstoqueId, novoEspacoId, usuarioId });
@@ -182,6 +183,8 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
                 setFormEdicao(prev => ({ ...prev, espacoId: novoEspacoId }));
                 setNovoEspacoId('');
                 carregarHistorico();
+            } else if (response.status === 400) {
+                await aplicarErrosCampos(response, setFieldErrors, setErro);
             } else {
                 const mensagem = await extrairErro(response);
                 setErro(mensagem);
@@ -209,8 +212,8 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
 
                 carregarHistorico();
                 const novaQtde = payload.tipoMovimentacao === 1
-                    ? parseQuantity(itemAtivo.quantidade) + payload.quantidade
-                    : parseQuantity(itemAtivo.quantidade) - payload.quantidade;
+                    ? parseQuantity(itemAtivo.quantidade) + payload.quantidadeMovimento
+                    : parseQuantity(itemAtivo.quantidade) - payload.quantidadeMovimento;
 
                 setItemAtivo(prev => ({ ...prev, quantidade: novaQtde }));
                 setFormEdicao(prev => ({ ...prev, quantidade: formatQuantityMasked(novaQtde) }));
@@ -242,11 +245,13 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
 
     if (loading || !itemAtivo) {
         return (
-            <div className="detail-view w-full">
+            <div className="detail-view w-full detail-form-view">
                 <div className="detail-heading">
-                    <h2 className="no-margin">Detalhes do Item</h2>
+                    <h2 className="page-title no-margin">Detalhes do Item</h2>
                 </div>
-                <LoadingWaves variant="list" rows={1} label="Carregando item" />
+                <div className="detail-form-layout">
+                    <LoadingWaves variant="detail" rows={1} label="Carregando item" className="detail-loading-waves" />
+                </div>
                 {messageModal}
             </div>
         );
@@ -276,6 +281,7 @@ export default function ItemEstoqueDetailPage({ token, unidadeOrganizacionalId, 
             onOpenDelete={() => setShowDeleteModal(true)}
             onOpenTransferir={() => {
                 setNovoEspacoId('');
+                setFieldErrors({});
                 setShowTransferirModal(true);
             }}
             onSubmitMovimentar={handleMovimentar}
