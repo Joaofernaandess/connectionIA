@@ -104,15 +104,15 @@
 }
 
 .app-main:has(.detail-form-view) {
-  padding-top: 1rem;
+    padding-top: 1rem;
 }
 
 .app-main:has(.detail-history-view) {
-  padding-top: 1rem;
+    padding-top: 1rem;
 }
 
 .app-main:has(.install-panel) {
-  padding-top: 1rem;
+    padding-top: 1rem;
 }
 
 .home-hero {
@@ -143,6 +143,12 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.install-panel::-webkit-scrollbar {
+    display: none;
 }
 
 .install-step-image {
@@ -281,6 +287,34 @@
         overflow: visible;
     }
 
+    .space-create-form-view .detail-form-layout,
+    .space-create-form-view .detail-form-scroll-card {
+        width: 33vw;
+    }
+
+    .space-create-form-view .detail-action-bar {
+        padding-left: 33vw;
+        padding-right: 33vw;
+    }
+
+    .space-create-form-view textarea {
+        resize: none;
+    }
+
+    .inventory-list-fixed .inventory-list-scroll.space-items-manager {
+        width: min(100%, var(--zf-inventory-content-width));
+        align-self: center;
+    }
+
+    .inventory-list-fixed .space-items-list {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
+        justify-content: start;
+    }
+
+    .inventory-list-fixed .detail-action-bar {
+        padding-left: max(1rem, calc((100vw - var(--zf-inventory-content-width)) / 2));
+        padding-right: max(1rem, calc((100vw - var(--zf-inventory-content-width)) / 2));
+    }
 }
 
 @media (max-width: 599px) {

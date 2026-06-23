@@ -1,4 +1,5 @@
 import { TIPO_UNIDADE } from '../../constants/tipoUnidade';
+import ZeniteIcon from '../ZeniteIcon';
 import ExcluirItemModal from './ExcluirItemModal';
 import HistoricoMovimentacoes from './HistoricoMovimentacoes';
 import MovimentarEstoqueModal from './MovimentarEstoqueModal';
@@ -36,7 +37,7 @@ export default function ItemEstoqueDetail({
     messageModal
 }) {
     const isHistoricoMode = mode === 'historico';
-    const viewClassName = `detail-view w-full ${isHistoricoMode ? 'detail-history-view' : 'detail-form-view'}`;
+    const viewClassName = `detail-view w-full ${isHistoricoMode ? 'detail-history-view' : 'detail-form-view space-detail-form-view space-create-form-view'}`;
 
     return (
         <div className={viewClassName}>
@@ -49,12 +50,12 @@ export default function ItemEstoqueDetail({
                     <div className="card detail-card detail-form-scroll-card">
                         <div className="detail-card-body">
                             <div className="row detail-form-fields">
-                                <div className="column-4 mb-1">
+                                <div className="column-12 mb-1">
                                     <label className="label-sm text-muted">Descrição</label>
                                     <input type="text" value={formEdicao.descricao} onChange={e => onChangeFormEdicao({ ...formEdicao, descricao: e.target.value })} className={getInputClassName(fieldErrors.Descricao)} />
                                     {fieldErrors.Descricao && <small className="invalid-feedback d-block">{fieldErrors.Descricao}</small>}
                                 </div>
-                                <div className="column-4 mb-1">
+                                <div className="column-12 mb-1">
                                     <span className="label-sm text-muted">Unidade</span>
                                     <div className="space-items-unit-filter" role="radiogroup" aria-label="Unidade de medida">
                                         {Object.entries(TIPO_UNIDADE).map(([key, val]) => (
@@ -72,7 +73,7 @@ export default function ItemEstoqueDetail({
                                     </div>
                                     {fieldErrors.TipoUnidadeMedida && <small className="invalid-feedback d-block">{fieldErrors.TipoUnidadeMedida}</small>}
                                 </div>
-                                <div className="column-4 mb-1">
+                                <div className="column-12 mb-1">
                                     <label className="label-sm text-muted">Saldo Atual</label>
                                     <input type="text" value={formEdicao.quantidade} className="w-full no-field-margin input-readonly" readOnly />
                                 </div>
@@ -93,7 +94,8 @@ export default function ItemEstoqueDetail({
                 </button>
                 {!isHistoricoMode && (
                     <button className="button" onClick={onConfirmarEdicao} disabled={!houveMudanca}>
-                        Salvar
+                        <ZeniteIcon name="save" size={18}/>
+                       <span className="button-icon-text"> Salvar</span>
                     </button>
                 )}
             </div>

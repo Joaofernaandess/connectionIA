@@ -16,15 +16,14 @@ export default function EspacoList({
     return (
         <div className="w-full inventory-list-fixed">
             <div className="inventory-list-fixed-header">
-                <div className="inventory-list-header">
-                    <h2 className="page-title no-margin">Gestão de Espaços</h2>
-                    <button className="button inventory-list-header-action no-margin" onClick={onAbrirNovo}>
-                        <ZeniteIcon name="plus" />
-                        <span className="button-icon-text">Novo espaço</span>
-                    </button>
-                </div>
+                {/* Título centralizado, linha própria */}
+                <h2 className="page-title no-margin inventory-page-title">
+                    Gestão de Espaços
+                </h2>
 
-                <div className="mb-2">
+                {/* Linha com busca (50%) + botão Novo espaço */}
+                <div className="inventory-list-header-row">
+                    <div className="inventory-search-wrapper">
                     <input
                         type="text"
                         placeholder="Pesquisar..."
@@ -32,6 +31,15 @@ export default function EspacoList({
                         onChange={(e) => onChangePesquisa(e.target.value)}
                         className="w-full no-field-margin"
                     />
+                    </div>
+
+                    <button
+                    className="button inventory-list-header-action no-margin"
+                    onClick={onAbrirNovo}
+                    >
+                    <ZeniteIcon name="plus" />
+                    <span className="button-icon-text">Novo espaço</span>
+                    </button>
                 </div>
             </div>
 

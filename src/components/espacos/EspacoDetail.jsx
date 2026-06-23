@@ -1,6 +1,5 @@
 import ExcluirItemModal from '../itemEstoque/ExcluirItemModal';
 import ZeniteIcon from '../ZeniteIcon';
-import ExcluirEspacoModal from './ExcluirEspacoModal';
 import ItensDoEspacoGrid from './ItensDoEspacoGrid';
 
 export default function EspacoDetail({
@@ -12,10 +11,8 @@ export default function EspacoDetail({
     messageModal,
     mode = 'editar',
     onChangeFormEdicao,
-    onCloseDelete,
     onConfirmarEdicao,
     onEditarItem,
-    onExcluir,
     onExcluirItem,
     onHistoricoItem,
     onNovoItem,
@@ -23,16 +20,14 @@ export default function EspacoDetail({
     onTransferirItem,
     onCloseDeleteItem,
     onConfirmDeleteItem,
-    onOpenDelete,
     onVoltar,
     excluindoItemId,
     showDeleteItemModal,
-    showDeleteModal
 }) {
     const isItensMode = mode === 'itens';
 
     return (
-        <div className={isItensMode ? 'w-full inventory-list-fixed' : 'detail-view w-full detail-form-view space-detail-form-view'}>
+        <div className={isItensMode ? 'w-full inventory-list-fixed' : 'detail-view w-full detail-form-view space-detail-form-view space-create-form-view'}>
             {!isItensMode && (
                 <div className="detail-heading">
                     <h2 className="page-title no-margin">Detalhes do Espaço</h2>
@@ -57,7 +52,7 @@ export default function EspacoDetail({
                             <div className="column-12 mb-1">
                                 <label className="label-sm">Descrição</label>
                                 <textarea
-                                    rows={4}
+                                    rows={10}
                                     placeholder="Descreva o espaço"
                                     value={formEdicao.descricao}
                                     onChange={e => onChangeFormEdicao({ ...formEdicao, descricao: e.target.value })}
@@ -86,7 +81,7 @@ export default function EspacoDetail({
                 </>
             )}
 
-            <div className={`detail-action-bar ${isItensMode ? 'detail-action-bar-two' : 'space-detail-actions'}`}>
+            <div className="detail-action-bar detail-action-bar-two">
                 <button className="button button-outline" onClick={onVoltar}>
                     Voltar
                 </button>
@@ -94,9 +89,6 @@ export default function EspacoDetail({
                     <>
                         <button className="button" onClick={onConfirmarEdicao} disabled={!houveMudanca}>
                             Salvar
-                        </button>
-                        <button className="button button-danger" onClick={onOpenDelete}>
-                            Excluir
                         </button>
                     </>
                 )}
@@ -107,10 +99,6 @@ export default function EspacoDetail({
                     </button>
                 )}
             </div>
-
-            {showDeleteModal && (
-                <ExcluirEspacoModal onClose={onCloseDelete} onConfirm={onExcluir} />
-            )}
 
             {showDeleteItemModal && (
                 <ExcluirItemModal onClose={onCloseDeleteItem} onConfirm={onConfirmDeleteItem} />

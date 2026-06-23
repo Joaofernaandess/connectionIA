@@ -105,7 +105,7 @@ export default function EspacoView({ token, unidadeOrganizacionalId }) {
                 messageModal={messageModal}
                 onEditarEspaco={(espaco) => navigate(`/espacos/${espaco.espacoId}`)}
                 onExcluirEspaco={setEspacoParaExcluir}
-                onGerenciarItens={(espaco) => navigate(`/espacos/${espaco.espacoId}/itens`)}
+                onGerenciarItens={(espaco) => navigate(`/espacos/${espaco.espacoId}/itens`, { state: { espaco } })}
                 onAbrirNovo={() => navigate('/espacos/novo')}
                 onChangePesquisa={setPesquisa}
                 pesquisa={pesquisa}

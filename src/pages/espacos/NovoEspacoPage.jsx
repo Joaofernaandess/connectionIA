@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MessageModal from '../../components/MessageModal';
+import ZeniteIcon from '../../components/ZeniteIcon';
 import { criarEspaco } from '../../services/espacoService';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../../utils/apiUtils';
 import { criarPayloadEspaco } from '../../utils/espacoViewModel';
@@ -36,7 +37,7 @@ export default function NovoEspacoPage({ token, unidadeOrganizacionalId }) {
     };
 
     return (
-        <div className="detail-view detail-form-view space-detail-form-view w-full">
+        <div className="detail-view detail-form-view space-detail-form-view space-create-form-view w-full">
             <div className="detail-heading">
                 <h2 className="page-title no-margin">Novo Espaço</h2>
             </div>
@@ -59,7 +60,7 @@ export default function NovoEspacoPage({ token, unidadeOrganizacionalId }) {
                             <div className="column-12 mb-1">
                                 <label className="label-sm">Descrição</label>
                                 <textarea
-                                    rows={4}
+                                    rows={10}
                                     placeholder="Descreva o espaço"
                                     value={formData.descricao}
                                     onChange={e => setFormData({ ...formData, descricao: e.target.value })}
@@ -73,10 +74,11 @@ export default function NovoEspacoPage({ token, unidadeOrganizacionalId }) {
 
                 <div className="detail-action-bar detail-action-bar-two">
                     <button type="button" className="button button-outline" onClick={() => navigate('/espacos')}>
-                        <span className="button-icon-text">Voltar</span>
+                        Voltar
                     </button>
                     <button type="submit" className="button">
-                        <span className="button-icon-text">Salvar</span>
+                        <ZeniteIcon name="save" size={18} />
+                        <span className="button-icon-text"> Salvar</span>
                     </button>
                 </div>
             </form>

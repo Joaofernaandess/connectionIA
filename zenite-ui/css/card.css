@@ -42,14 +42,6 @@
   }
 }
 
-@media (min-width: 600px){
-  .inventory-list-scroll .card:hover,
-  .inventor-list-scroll .card:focus-within {
-    transform: translateY(0);
-  }
-
-}
-
 /*mobile first*/
 .auth-card {
   width: 100%;
@@ -689,6 +681,7 @@
   grid-template-columns: 1fr;
   gap: 1rem;
   width: 100%;
+  justify-content: start;
   padding-top: 0;
 }
 
@@ -861,14 +854,31 @@
 }
 
 @media (min-width: 900px) {
+  .space-items-unit-filter {
+    grid-template-columns: repeat(4, max-content);
+    justify-content: space-between;
+  }
+
+  .space-items-unit-option:nth-last-child(-n + 2) {
+    transform: translateX(calc(50% + 0.65rem));
+  }
+
   .space-items-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
   }
 }
 
 @media (min-width: 1200px) {
+  .space-items-unit-filter {
+    grid-template-columns: repeat(6, max-content);
+  }
+
+  .space-items-unit-option:nth-last-child(-n + 2) {
+    transform: none;
+  }
+
   .space-items-list {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
   }
 }
 
@@ -914,12 +924,15 @@
 }
 
 .validation-user-grid {
-  gap: 0.45rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
   margin-bottom: 0;
+  width: 100%;
 }
 
 .validation-user-scroll {
-  padding-top: 0;
+  padding-top: 0.5rem;
 }
 
 .validation-user-view .inventory-list-fixed-header .mb-2 {
@@ -927,18 +940,23 @@
 }
 
 .validation-user-grid .column-4 {
-  margin-bottom: 0.45rem !important;
+  width: 100%;
+  min-width: 0;
+  flex: none;
+  margin-bottom: 0 !important;
 }
 
 .validation-user-card {
   height: auto;
-  padding: 1.25rem;
+  padding: 1rem;
   margin-bottom: 0;
-  gap: 0.45rem;
+  gap: 0.35rem;
 }
 
 .validation-user-card .button {
-  margin-top: 0.35rem;
+  margin-top: 0.25rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .validation-user-title {
@@ -950,7 +968,24 @@
 }
 
 .validation-user-description {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.45rem;
+}
+
+@media (min-width: 600px) {
+  .validation-user-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .validation-user-grid,
+  .validation-loading-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .validation-user-card {
+    min-height: 0;
+  }
 }
 
 .dashboard-filter-section {

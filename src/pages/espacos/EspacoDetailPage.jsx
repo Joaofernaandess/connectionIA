@@ -7,7 +7,6 @@ import MovimentarEstoqueModal from '../../components/itemEstoque/MovimentarEstoq
 import TransferirItemModal from '../../components/itemEstoque/TransferirItemModal';
 import {
     atualizarEspaco,
-    excluirEspaco,
     listarEspacos,
     listarItensDoEspaco,
     obterEspaco
@@ -23,9 +22,13 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId, usuar
     const location = useLocation();
     const { espacoId } = useParams();
 
-    const [espacoSelecionado, setEspacoSelecionado] = useState(null);
+    const espacoState = location.state?.espaco || null;
+    const [espacoSelecionado, setEspacoSelecionado] = useState(espacoState);
     const [espacos, setEspacos] = useState([]);
-    const [formEdicao, setFormEdicao] = useState({ nome: '', descricao: '' });
+    const [formEdicao, setFormEdicao] = useState({
+        nome: espacoState?.nome || '',
+        descricao: espacoState?.descricao || ''
+    });
     const [itensDoEspaco, setItensDoEspaco] = useState([]);
     const [excluindoItemId, setExcluindoItemId] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -33,7 +36,6 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId, usuar
     const [erro, setErro] = useState('');
     const [sucesso, setSucesso] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemParaExcluir, setItemParaExcluir] = useState(null);
     const [itemParaMovimentar, setItemParaMovimentar] = useState(null);
     const [itemParaTransferir, setItemParaTransferir] = useState(null);
@@ -132,28 +134,6 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId, usuar
             }
         } catch (error) {
             console.error(error);
-        }
-    };
-
-    const handleExcluirEspaco = async () => {
-        setErro('');
-        setSucesso('');
-
-        try {
-            const response = await excluirEspaco({ token, espacoId });
-
-            if (response.ok || response.status === 204) {
-                const mensagem = await extrairMensagem(response);
-                setShowDeleteModal(false);
-                navigate('/espacos', { replace: true, state: { sucesso: mensagem } });
-            } else {
-                const mensagem = await extrairErro(response);
-                setErro(mensagem);
-                setShowDeleteModal(false);
-            }
-        } catch (error) {
-            console.error(error);
-            setShowDeleteModal(false);
         }
     };
 
@@ -276,7 +256,7 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId, usuar
         />
     );
 
-    if (loading || !espacoSelecionado) {
+    if ((loading || !espacoSelecionado) && mode !== 'itens') {
         return (
             <div className="detail-view w-full detail-form-view">
                 <div className="detail-heading">
@@ -297,16 +277,14 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId, usuar
                 formEdicao={formEdicao}
                 houveMudanca={houveMudanca}
                 itensDoEspaco={itensDoEspaco}
-                loadingItens={loadingItens}
+                loadingItens={mode === 'itens' ? loading || loadingItens : loadingItens}
                 messageModal={messageModal}
                 mode={mode}
                 onChangeFormEdicao={setFormEdicao}
-                onCloseDelete={() => setShowDeleteModal(false)}
                 onCloseDeleteItem={() => setItemParaExcluir(null)}
                 onConfirmarEdicao={handleConfirmarEdicao}
                 onConfirmDeleteItem={handleExcluirItem}
                 onEditarItem={(item) => navigate(`/itens-estoque/${item.itemEstoqueId}`, { state: { espacoOrigemId: espacoId } })}
-                onExcluir={handleExcluirEspaco}
                 onExcluirItem={setItemParaExcluir}
                 onHistoricoItem={(item) => navigate(`/itens-estoque/${item.itemEstoqueId}?secao=historico`, { state: { espacoOrigemId: espacoId } })}
                 onNovoItem={() => navigate(`/itens-estoque/novo?espacoId=${espacoId}`, { state: { espacoId } })}
@@ -316,11 +294,9 @@ export default function EspacoDetailPage({ token, unidadeOrganizacionalId, usuar
                     setNovoEspacoId('');
                     setFieldErrors({});
                 }}
-                onOpenDelete={() => setShowDeleteModal(true)}
                 onVoltar={() => navigate('/espacos')}
                 excluindoItemId={excluindoItemId}
                 showDeleteItemModal={!!itemParaExcluir}
-                showDeleteModal={showDeleteModal}
             />
             {itemParaMovimentar && (
                 <MovimentarEstoqueModal

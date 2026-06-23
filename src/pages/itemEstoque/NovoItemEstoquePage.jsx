@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import MessageModal from '../../components/MessageModal';
+import ZeniteIcon from '../../components/ZeniteIcon';
 import { TIPO_UNIDADE } from '../../constants/tipoUnidade';
 import { criarItemEstoque } from '../../services/itemEstoqueService';
 import { aplicarErrosCampos, extrairErro, extrairMensagem } from '../../utils/apiUtils';
@@ -54,7 +55,7 @@ export default function NovoItemEstoquePage({ token, unidadeOrganizacionalId }) 
     };
 
     return (
-        <div className="detail-view detail-form-view w-full">
+        <div className="detail-view detail-form-view space-detail-form-view space-create-form-view w-full">
             <div className="detail-heading">
                 <h2 className="no-margin">Novo Item</h2>
             </div>
@@ -113,7 +114,8 @@ export default function NovoItemEstoquePage({ token, unidadeOrganizacionalId }) 
                         Voltar
                     </button>
                     <button type="submit" className="button">
-                        Salvar
+                        <ZeniteIcon name="save" size={18} />
+                        <span className="button-icon-text"> Salvar</span>
                     </button>
                 </div>
             </form>
