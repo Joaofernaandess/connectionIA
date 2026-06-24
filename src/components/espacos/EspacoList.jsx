@@ -16,12 +16,10 @@ export default function EspacoList({
     return (
         <div className="w-full inventory-list-fixed">
             <div className="inventory-list-fixed-header">
-                {/* Título centralizado, linha própria */}
                 <h2 className="page-title no-margin inventory-page-title">
                     Gestão de Espaços
                 </h2>
 
-                {/* Linha com busca (50%) + botão Novo espaço */}
                 <div className="inventory-list-header-row">
                     <div className="inventory-search-wrapper">
                     <input
