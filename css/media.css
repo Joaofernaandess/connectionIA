@@ -1,0 +1,19 @@
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+}
+
+figure {
+  margin: 1.5rem 0;
+}
+
+figcaption {
+  text-align: center;
+  color: var(--zf-text-main);
+  font-size: 0.85em;
+  margin-top: 0.75rem;
+  font-style: italic;
+}

@@ -1,33 +1,36 @@
 {
-  "name": "estoque-certo-web",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+  "name": "zenite-ui",
+  "version": "1.5.7",
+  "description": "Versão minificada e de alta performance do framework Zenite UI",
+  "keywords": [
+    "css",
+    "framework",
+    "ui",
+    "frontend",
+    "javascript",
+    "minified"
+  ],
+  "homepage": "https://zenitetecnologia.github.io/zenite-ui-docs/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zenitetecnologia/zenite-ui.git"
   },
-  "dependencies": {
-    "chart.js": "^4.5.1",
-    "lucide-react": "^1.17.0",
-    "react": "^18.2.0",
-    "react-chartjs-2": "^5.3.1",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^7.15.1",
-    "recharts": "^3.8.1"
+  "license": "MIT",
+  "author": "Zênite Tecnologia",
+  "type": "module",
+  "main": "js/zenite.min.js",
+  "style": "css/zenite.min.css",
+  "files": [
+    "css/zenite.min.css",
+    "js/zenite.min.js"
+  ],
+  "scripts": {
+    "build:css": "esbuild css/zenite.css --bundle --minify --outfile=css/zenite.min.css",
+    "build:js": "esbuild js/zenite.js --bundle --minify --outfile=js/zenite.min.js",
+    "build": "npm run build:css && npm run build:js",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
-    "eslint": "^10.2.1",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
-    "globals": "^17.5.0",
-    "vite": "^8.0.16",
-    "vite-plugin-pwa": "^1.3.0"
+    "esbuild": "^0.20.2"
   }
 }
