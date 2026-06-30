@@ -1,0 +1,288 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+
+  background-color: var(--zf-accent);
+  color: var(--zf-background-primary);
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--zf-accent) 30%, transparent);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.button.button-outline {
+  background-color: transparent;
+  border-color: var(--zf-accent);
+  color: var(--zf-accent);
+}
+
+.button.button-outline:hover:not(:disabled) {
+  background-color: var(--zf-accent);
+  color: var(--zf-background-primary);
+}
+
+.button:disabled,
+.button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.button-full,
+.inventory-card-action {
+  width: 100%;
+}
+
+.button-flex {
+  flex: 1;
+}
+
+.button-icon-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  border: 1.5px solid var(--zf-danger);
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--zf-danger);
+  cursor: pointer;
+  transition: transform 0.22s ease, background-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.button-icon-danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background-color: var(--zf-danger);
+  color: #fff;
+  box-shadow: 0 8px 18px var(--zf-danger-soft);
+}
+
+.button-icon-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.button-danger {
+  background-color: var(--zf-danger) !important;
+  border-color: var(--zf-danger) !important;
+  color: #fff !important;
+}
+
+.button-exit {
+  background-color: var(--zf-danger) !important;
+  border-color: var(--zf-danger) !important;
+  color: #fff !important;
+}
+
+.button-accent-confirm {
+  background-color: var(--zf-accent) !important;
+  border-color: var(--zf-accent) !important;
+  color: #000 !important;
+}
+
+.button-outline-error,
+.button-outline-danger {
+  background-color: transparent;
+  border-color: var(--zf-danger);
+  color: var(--zf-danger);
+}
+
+.button-outline-error:hover,
+.button-outline-error:active,
+.button-outline-danger:hover,
+.button-outline-danger:active {
+  background-color: var(--zf-danger-soft);
+  color: var(--zf-danger);
+}
+
+.button-outline-success {
+  background-color: transparent;
+  border-color: var(--zf-success);
+  color: var(--zf-success);
+}
+
+.button-outline-success:hover,
+.button-outline-success:active {
+  background-color: var(--zf-success-soft);
+  color: var(--zf-success);
+}
+
+.button-outline-warning {
+  background-color: transparent;
+  border-color: var(--zf-warning);
+  color: var(--zf-warning);
+}
+
+.button-outline-warning:hover,
+.button-outline-warning:active {
+  background-color: var(--zf-warning-soft);
+  color: var(--zf-warning);
+}
+
+[data-theme="light"] .button.button-outline-error,
+[data-theme="light"] .button.button-outline-danger {
+  background-color: transparent !important;
+  border-color: var(--zf-danger) !important;
+  color: var(--zf-danger) !important;
+}
+
+[data-theme="light"] .button.button-outline-success {
+  background-color: transparent !important;
+  border-color: var(--zf-success) !important;
+  color: var(--zf-success) !important;
+}
+
+[data-theme="light"] .button.button-outline-warning {
+  background-color: transparent !important;
+  border-color: var(--zf-warning) !important;
+  color: var(--zf-warning) !important;
+}
+
+[data-theme="light"] .button.button-outline-error:hover,
+[data-theme="light"] .button.button-outline-error:active,
+[data-theme="light"] .button.button-outline-danger:hover,
+[data-theme="light"] .button.button-outline-danger:active {
+  background-color: var(--zf-danger-soft) !important;
+  color: var(--zf-danger) !important;
+}
+
+[data-theme="light"] .button.button-outline-success:hover,
+[data-theme="light"] .button.button-outline-success:active {
+  background-color: var(--zf-success-soft) !important;
+  color: var(--zf-success) !important;
+}
+
+[data-theme="light"] .button.button-outline-warning:hover,
+[data-theme="light"] .button.button-outline-warning:active {
+  background-color: var(--zf-warning-soft) !important;
+  color: var(--zf-warning) !important;
+}
+
+.button-icon-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  border: 1.5px solid var(--zf-accent);
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--zf-accent);
+  cursor: pointer;
+  transition: transform 0.22s ease, background-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.button-icon-accent:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background-color: var(--zf-accent);
+  color: var(--zf-background-primary);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--zf-accent) 22%, transparent);
+}
+
+.button-icon-accent:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.inventory-card-action {
+  margin: 0;
+  padding: 0.45rem 1rem;
+  min-height: 38px;
+}
+
+.detail-action-bar .button,
+.modal-actions .button {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.modal-actions .button {
+  min-height: 64px;
+}
+
+.modal-actions-delete-confirmation .button {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+}
+
+.header-menu-button,
+.theme-toggle-button {
+  margin: 0;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.theme-toggle-button {
+  z-index: 1000;
+}
+
+.theme-toggle-fixed {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  margin: 1rem;
+}
+
+.auth-page>.theme-toggle-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  padding: 0;
+  margin: 0;
+  z-index: 2;
+}
+
+.auth-page>.theme-toggle-button .texto-mobile {
+  display: none !important;
+}
+
+.sidebar-logout-button {
+  width: 100%;
+}
+
+@media (max-width: 599px) {
+  .texto-mobile {
+    display: none !important;
+  }
+
+  .btn-mobile {
+    padding: 0.5rem 0.7rem !important;
+  }
+}

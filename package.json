@@ -1,0 +1,36 @@
+{
+  "name": "zenite-ui",
+  "version": "1.5.14",
+  "description": "Versão minificada e de alta performance do framework Zenite UI",
+  "keywords": [
+    "css",
+    "framework",
+    "ui",
+    "frontend",
+    "javascript",
+    "minified"
+  ],
+  "homepage": "https://zenitetecnologia.github.io/zenite-ui-docs/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zenitetecnologia/zenite-ui.git"
+  },
+  "license": "MIT",
+  "author": "Zênite Tecnologia",
+  "type": "module",
+  "main": "js/zenite.min.js",
+  "style": "css/zenite.min.css",
+  "files": [
+    "css/zenite.min.css",
+    "js/zenite.min.js"
+  ],
+  "scripts": {
+    "build:css": "esbuild css/zenite.css --bundle --minify --outfile=css/zenite.min.css",
+    "build:js": "esbuild js/zenite.js --bundle --minify --outfile=js/zenite.min.js",
+    "build": "npm run build:css && npm run build:js",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.2"
+  }
+}
