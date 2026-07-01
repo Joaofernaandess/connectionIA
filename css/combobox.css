@@ -50,9 +50,7 @@
   transform: translateY(-50%);
   color: var(--zf-accent);
   font-size: 0.8em;
-
   pointer-events: none;
-
   transition: transform 0.3s ease;
 }
 
@@ -127,7 +125,6 @@
   list-style: none;
   padding: 0.5rem 0;
   margin: 0;
-
   opacity: 0;
   visibility: hidden;
   transform: translateY(-10px);
@@ -235,4 +232,50 @@
 .zf-combobox-list::-webkit-scrollbar-thumb {
   background: var(--zf-scrollbar-thumb);
   border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════
+   ZF INPUT WITH ACTION
+   ═══════════════════════════════════════════════ */
+
+.zf-input-with-action {
+  display: flex;
+  align-items: flex-center;
+  width: 100%;
+  gap: 0;
+}
+
+.zf-input-with-action > .zf-combobox,
+.zf-input-with-action > input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.zf-input-with-action > .zf-combobox .zf-combobox-input,
+.zf-input-with-action > input {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: none !important;
+}
+
+.zf-input-with-action > .zf-combobox::after {
+  display: none;
+}
+
+.zf-input-with-action__button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  padding: 0;
+  border-radius: 0 8px 8px 0 !important;
+  border-left: none !important;
+  margin: 0 !important;
+  align-self: stretch;
+}
+
+.zf-input-with-action > .zf-combobox.zf-combobox-custom-arrow::after {
+  display: block;
+  right: 0.75rem;
 }
