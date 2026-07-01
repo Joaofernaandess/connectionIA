@@ -20,11 +20,11 @@ Ideal para projetos estáticos ou sem processo de *build*. Não é necessária a
 
 **CSS**
 
-    <link href="https://cdn.jsdelivr.net/npm/zenite-ui@1.5.14/css/zenite.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/zenite-ui@1.5.15/css/zenite.min.css" rel="stylesheet">
 
 **JavaScript**
 
-    <script src="https://cdn.jsdelivr.net/npm/zenite-ui@1.5.14/js/zenite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/zenite-ui@1.5.15/js/zenite.min.js"></script>
 
 
 ### Opção B: Instalação via NPM (Para Bundlers e Projetos Modernos)
