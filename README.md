@@ -1,59 +1,93 @@
-# Zênite UI Framework
+# Pedido Certo AI API
 
-O Zênite UI é um framework front-end moderno, leve e responsivo, focado na simplicidade e na elegância. Construído com HTML5, CSS3 puro e Vanilla JavaScript, foi concebido para acelerar o desenvolvimento de interfaces web de alto padrão.
+Backend .NET do Pedido Certo AI.
 
----
+## Estrutura
 
-## 1. Diferenciais
-- Leveza: Sem dependências externas pesadas, focado em performance.
-- Responsividade: Design totalmente adaptável para qualquer dispositivo.
-- Modularidade: Estrutura organizada para importação direta via CDN ou via gerenciadores de pacotes.
+```text
+pedido-certo-ai-api
+  Pedido.Server
+  pedido-certo-ai.sln
+```
 
----
+## Variaveis Obrigatorias
 
-## 2. Instalação e Utilização
+Configure antes de rodar o backend:
 
-Pode utilizar o Zênite UI de duas formas, dependendo da arquitetura do seu projeto:
+```powershell
+DefaultConnection="Host=localhost;Port=5432;Database=pedido_certo_ai;Username=postgres;Password=admin"
+zenite_jwt_auth="sua_chave_jwt"
 
-### Opção A: Importação direta via CDN (Mais rápida)
-Ideal para projetos estáticos ou sem processo de *build*. Não é necessária a instalação de pacotes locais. Adicione as referências abaixo diretamente no seu arquivo HTML:
+AWS_REGION="us-east-2"
+AWS_ACCESS_KEY_ID="sua_access_key"
+AWS_SECRET_ACCESS_KEY="sua_secret_key"
+PedidoStorageBucket="pedido-certo-ai"
 
-**CSS**
+PEDIDO_ANALISE_IA_WEBHOOK_TOKEN="mesmo_token_configurado_na_lambda"
+```
 
-    <link href="https://cdn.jsdelivr.net/npm/zenite-ui@1.5.15/css/zenite.min.css" rel="stylesheet">
+## Para Que Serve Cada Variavel
 
-**JavaScript**
+```text
+DefaultConnection
+String de conexao PostgreSQL.
 
-    <script src="https://cdn.jsdelivr.net/npm/zenite-ui@1.5.15/js/zenite.min.js"></script>
+zenite_jwt_auth
+Chave usada para gerar/validar JWT.
 
+AWS_REGION
+Regiao AWS do bucket S3. Atualmente: us-east-2.
 
-### Opção B: Instalação via NPM (Para Bundlers e Projetos Modernos)
-Ideal se estiver utilizando ferramentas como Webpack, Vite, React, etc. Execute o comando abaixo no seu terminal:
+AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+Credenciais usadas pelo backend para enviar arquivos ao S3.
 
-    npm install zenite-ui
+PedidoStorageBucket
+Bucket onde os arquivos de pedido sao salvos.
 
-**Importação via Bundlers:**
-Nos seus arquivos principais (ex: `main.js` ou `index.js`), importe o CSS e o JS:
+PEDIDO_ANALISE_IA_WEBHOOK_TOKEN
+Token validado no endpoint PUT /v1/pedidos/{pedidoId}/analise-ia.
+A Lambda envia esse token no header X-Pedido-Webhook-Token.
+```
 
-    import 'zenite-ui/css/zenite.min.css';
-    import 'zenite-ui';
+## Fluxo De Pedido
 
-**Importação em HTML usando node_modules local:**
-Se instalou via NPM mas ainda usa HTML estático:
+```text
+Front-end
+  -> POST /v1/pedidos/upload
+  -> Backend salva arquivo no S3
+  -> Backend cria pedido no banco com status AguardandoAnaliseIA
+  -> S3 Event Notification envia evento para SQS
+  -> SQS aciona Lambda zenite-agents
+  -> Lambda analisa com OpenAI
+  -> Lambda chama PUT /v1/pedidos/{pedidoId}/analise-ia
+  -> Backend atualiza pedido, itens e grades
+```
 
-    <link rel="stylesheet" href="./node_modules/zenite-ui/css/zenite.min.css">
-    <script src="./node_modules/zenite-ui/js/zenite.min.js"></script>
+O backend nao envia mensagem diretamente para SQS. Quem dispara a fila e o evento do bucket S3.
 
----
+## Rodar
 
-## 3. Estrutura do Projeto
-O framework é composto por diversos módulos para facilitar a manutenção e o desenvolvimento:
-- Layout: Grid responsivo, Colunas e classes utilitárias.
-- Componentes: Buttons, Cards, Modals, Navbars, entre outros.
-- Formulários: Inputs estilizados, Checkboxes e Switches.
+```powershell
+cd C:\Users\dougl\source\Repositórios\pedido-certo-ai-api\Pedido.Server
+dotnet run
+```
 
----
+## Build
 
-## 4. Licença
-Este projeto está sob a licença MIT. Desenvolvido por Zênite Tecnologia LTDA.
-https://www.npmjs.com/package/zenite-ui
+```powershell
+cd C:\Users\dougl\source\Repositórios\pedido-certo-ai-api
+dotnet build -c Release
+```
+
+## Docker PostgreSQL Local
+
+```powershell
+docker run --name pg-pedido-certo-ai -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=admin -e POSTGRES_DB=pedido_certo_ai -p 5432:5432 -d postgres:latest
+```
+
+O SQL base esta em:
+
+```text
+Pedido.Server/Repositories/_database.sql
+```
+

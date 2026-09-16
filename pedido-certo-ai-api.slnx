@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Pedido.Domain/Pedido.Domain.csproj" />
+  <Project Path="Pedido.Data/Pedido.Data.csproj" />
+  <Project Path="Pedido.Infra/Pedido.Infra.csproj" />
+  <Project Path="Pedido.Server/Pedido.Server.csproj" />
+</Solution>
