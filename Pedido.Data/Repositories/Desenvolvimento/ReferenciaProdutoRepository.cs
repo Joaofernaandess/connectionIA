@@ -17,16 +17,20 @@ public class ReferenciaProdutoRepository : BaseRepository, IReferenciaProdutoRep
             (
                 referencia_produto_id,
                 linha_produto_id,
+                cor_id,
                 numero_referencia,
                 referencia,
+                sigla,
                 observacao
             )
             VALUES
             (
                 @referencia_produto_id,
                 @linha_produto_id,
+                @cor_id,
                 @numero_referencia,
                 @referencia,
+                @sigla,
                 @observacao
             )
             RETURNING referencia_produto_id;
@@ -39,8 +43,10 @@ public class ReferenciaProdutoRepository : BaseRepository, IReferenciaProdutoRep
 
             cmd.Parameters.Add("referencia_produto_id", NpgsqlDbType.Uuid).Value = referenciaProduto.ReferenciaProdutoId;
             cmd.Parameters.Add("linha_produto_id", NpgsqlDbType.Uuid).Value = referenciaProduto.LinhaProdutoId;
+            cmd.Parameters.Add("cor_id", NpgsqlDbType.Uuid).Value = referenciaProduto.CorId.HasValue ? referenciaProduto.CorId.Value : (object)DBNull.Value;
             cmd.Parameters.Add("numero_referencia", NpgsqlDbType.Integer).Value = referenciaProduto.NumeroReferencia;
             cmd.Parameters.Add("referencia", NpgsqlDbType.Varchar).Value = referenciaProduto.Referencia;
+            cmd.Parameters.Add("sigla", NpgsqlDbType.Varchar).Value = referenciaProduto.Sigla;
             cmd.Parameters.Add("observacao", NpgsqlDbType.Varchar).Value = (object?)referenciaProduto.Observacao ?? DBNull.Value;
 
             var result = await cmd.ExecuteScalarAsync();
@@ -61,15 +67,21 @@ public class ReferenciaProdutoRepository : BaseRepository, IReferenciaProdutoRep
             SELECT
                 referencia_produto.referencia_produto_id,
                 referencia_produto.linha_produto_id,
+                referencia_produto.cor_id,
                 linha_produto.linha,
                 referencia_produto.numero_referencia,
                 referencia_produto.referencia,
+                referencia_produto.sigla,
+                COALESCE(cor.cor_descricao, '') AS cor_descricao,
+                COALESCE(cor.cor_codigo, '') AS cor_codigo,
                 referencia_produto.observacao,
                 referencia_produto.data_criacao
             FROM
                 pedido_certo_ai.referencia_produto
             INNER JOIN
                 pedido_certo_ai.linha_produto ON linha_produto.linha_produto_id = referencia_produto.linha_produto_id
+            LEFT JOIN
+                pedido_certo_ai.cor ON cor.cor_id = referencia_produto.cor_id
             WHERE 1 = 1
         ";
 
@@ -94,9 +106,13 @@ public class ReferenciaProdutoRepository : BaseRepository, IReferenciaProdutoRep
                 {
                     ReferenciaProdutoId = reader.GetGuid("referencia_produto_id"),
                     LinhaProdutoId = reader.GetGuid("linha_produto_id"),
+                    CorId = reader.GetGuidNullable("cor_id"),
                     Linha = reader.GetInt32("linha"),
                     NumeroReferencia = reader.GetInt32("numero_referencia"),
                     Referencia = reader.GetString("referencia"),
+                    Sigla = reader.GetString("sigla"),
+                    CorDescricao = reader.GetString("cor_descricao"),
+                    CorCodigo = reader.GetString("cor_codigo"),
                     Observacao = reader.GetStringNullable("observacao"),
                     DataCriacao = reader.GetDateTime("data_criacao")
                 });
