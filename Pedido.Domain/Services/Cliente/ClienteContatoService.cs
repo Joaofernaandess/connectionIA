@@ -26,6 +26,7 @@ public class ClienteContatoService : BaseService
             contatoRequest.Valor = ContatoHelper.NormalizarValor(contatoRequest.TipoContato, contatoRequest.Valor);
             var contatos = await _clienteContatoRepository.Obter(clienteId);
             var primeiroContatoDoTipo = !contatos.Any(x => x.TipoContato == contatoRequest.TipoContato);
+            var definirComoDefault = contatoRequest.Default || primeiroContatoDoTipo;
 
             var contato = new ClienteContato
             {
@@ -33,12 +34,12 @@ public class ClienteContatoService : BaseService
                 ClienteId = clienteId,
                 TipoContato = contatoRequest.TipoContato,
                 Valor = contatoRequest.Valor,
-                Default = contatoRequest.Default || primeiroContatoDoTipo
+                Default = primeiroContatoDoTipo
             };
 
             var contatoId = await _clienteContatoRepository.Cadastrar(contato);
 
-            if (contato.Default)
+            if (definirComoDefault)
                 await _clienteContatoRepository.DefinirDefault(clienteId, contatoId);
 
             return contatoId;

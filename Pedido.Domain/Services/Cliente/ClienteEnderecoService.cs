@@ -23,6 +23,8 @@ public class ClienteEnderecoService : BaseService
         {
             await ValidarEndereco(clienteId, enderecoRequest);
             var enderecos = await _clienteEnderecoRepository.Obter(clienteId);
+            var primeiroEndereco = enderecos.Count == 0;
+            var definirComoDefault = enderecoRequest.Default || primeiroEndereco;
 
             var endereco = new ClienteEndereco
             {
@@ -35,12 +37,12 @@ public class ClienteEnderecoService : BaseService
                 Cidade = enderecoRequest.Cidade,
                 Uf = enderecoRequest.Uf,
                 Cep = enderecoRequest.Cep,
-                Default = enderecoRequest.Default || enderecos.Count == 0
+                Default = primeiroEndereco
             };
 
             var enderecoId = await _clienteEnderecoRepository.Cadastrar(endereco);
 
-            if (endereco.Default)
+            if (definirComoDefault)
                 await _clienteEnderecoRepository.DefinirDefault(clienteId, enderecoId);
 
             return enderecoId;

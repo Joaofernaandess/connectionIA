@@ -23,6 +23,8 @@ public class FornecedorEnderecoService : BaseService
         {
             await ValidarEndereco(fornecedorId, enderecoRequest);
             var enderecos = await _fornecedorEnderecoRepository.Obter(fornecedorId);
+            var primeiroEndereco = enderecos.Count == 0;
+            var definirComoDefault = enderecoRequest.Default || primeiroEndereco;
 
             var endereco = new FornecedorEndereco
             {
@@ -35,12 +37,12 @@ public class FornecedorEnderecoService : BaseService
                 Cidade = enderecoRequest.Cidade,
                 Uf = enderecoRequest.Uf,
                 Cep = enderecoRequest.Cep,
-                Default = enderecoRequest.Default || enderecos.Count == 0
+                Default = primeiroEndereco
             };
 
             var enderecoId = await _fornecedorEnderecoRepository.Cadastrar(endereco);
 
-            if (endereco.Default)
+            if (definirComoDefault)
                 await _fornecedorEnderecoRepository.DefinirDefault(fornecedorId, enderecoId);
 
             return enderecoId;

@@ -64,7 +64,9 @@ public class CorRepository : BaseRepository, ICorRepository
         if (!string.IsNullOrWhiteSpace(request.Pesquisa))
             sql += " AND (cor_descricao ILIKE @pesquisa OR cor_codigo ILIKE @pesquisa)";
 
-        sql += $" ORDER BY {ObterOrdenacao(request.Sort)} LIMIT @top OFFSET @skip";
+        var sort = string.IsNullOrWhiteSpace(request.Sort) ? "cor_descricao asc" : request.Sort.Trim().ToLowerInvariant();
+
+        sql += $" ORDER BY {sort} LIMIT @top OFFSET @skip";
 
         try
         {
@@ -160,16 +162,5 @@ public class CorRepository : BaseRepository, ICorRepository
         {
             throw;
         }
-    }
-
-    private static string ObterOrdenacao(string? sort)
-    {
-        return sort?.Trim().ToLowerInvariant() switch
-        {
-            "cor_descricao desc" => "cor_descricao desc",
-            "cor_codigo asc" => "cor_codigo asc",
-            "cor_codigo desc" => "cor_codigo desc",
-            _ => "cor_descricao asc"
-        };
     }
 }

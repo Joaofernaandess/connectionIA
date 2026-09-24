@@ -26,6 +26,7 @@ public class FornecedorContatoService : BaseService
             contatoRequest.Valor = ContatoHelper.NormalizarValor(contatoRequest.TipoContato, contatoRequest.Valor);
             var contatos = await _fornecedorContatoRepository.Obter(fornecedorId);
             var primeiroContatoDoTipo = !contatos.Any(x => x.TipoContato == contatoRequest.TipoContato);
+            var definirComoDefault = contatoRequest.Default || primeiroContatoDoTipo;
 
             var contato = new FornecedorContato
             {
@@ -33,12 +34,12 @@ public class FornecedorContatoService : BaseService
                 FornecedorId = fornecedorId,
                 TipoContato = contatoRequest.TipoContato,
                 Valor = contatoRequest.Valor,
-                Default = contatoRequest.Default || primeiroContatoDoTipo
+                Default = primeiroContatoDoTipo
             };
 
             var contatoId = await _fornecedorContatoRepository.Cadastrar(contato);
 
-            if (contato.Default)
+            if (definirComoDefault)
                 await _fornecedorContatoRepository.DefinirDefault(fornecedorId, contatoId);
 
             return contatoId;

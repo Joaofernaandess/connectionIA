@@ -1,4 +1,4 @@
-﻿using System.Threading.RateLimiting;
+using System.Threading.RateLimiting;
 
 namespace Pedido.Server.Startup;
 

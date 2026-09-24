@@ -40,19 +40,31 @@ public enum PedidoAvaliacaoNotaEnum
     Ótimo = 5
 }
 
-public enum CategoriaLinhaProduto
+public enum UnidadeMateriaPrima
+{
+    Litros = 1,
+    Mililitros = 2,
+    Quilos = 3,
+    Gramas = 4,
+    Miligramas = 5,
+    Unidades = 6,
+    Metros = 7,
+    Centimetros = 8
+}
+
+public enum CategoriaLinha
 {
     Adulto = 1,
     Infantil = 2
 }
 
-public enum GeneroLinhaProduto
+public enum GeneroLinha
 {
     Masculino = 1,
     Feminino = 2
 }
 
-public enum ProcessoProdutivoLinhaProduto
+public enum ProcessoProdutivoLinha
 {
     InjecaoDireta = 1,
     Montado = 2

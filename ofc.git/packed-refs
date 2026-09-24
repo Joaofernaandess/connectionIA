@@ -1,0 +1,6 @@
+# pack-refs with: peeled fully-peeled sorted 
+40f0a09e4854b179099694a9b3c4e24592291d88 refs/remotes/origin/RAG
+a5d8323eabd8a4435c8d75219f04064eb8530b8c refs/remotes/origin/develop
+7d266b6511b33188f4a2d93167e3f97dcd7b6d5d refs/remotes/origin/main
+f366f9f1b1653d1927ffe6013993df408d99b6be refs/remotes/origin/pedido-v2
+dbc5ea43a557eb7dde1cf6bcd21b5fffc43b3b4f refs/remotes/origin/solid
