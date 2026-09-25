@@ -292,3 +292,19 @@ CREATE TABLE IF NOT EXISTS pedido_certo_ai.materia_prima (
 
 CREATE INDEX IF NOT EXISTS ix_materia_prima_descricao
 ON pedido_certo_ai.materia_prima (descricao);
+
+
+
+
+-- Criação da Tabela de Histórico (vai ser feito um banco de dados especifico para ele mais para frente)
+CREATE TABLE IF NOT EXISTS historico_log (
+    historico_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    entidade_id UUID NOT NULL,
+    tipo_entidade VARCHAR(100) NOT NULL,
+    usuario_id UUID NULL,
+    nome_usuario VARCHAR(255) NULL,
+    descricao TEXT NOT NULL,
+    data_hora TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_historico_entidade ON historico_log(entidade_id);
