@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
-using NpgsqlTypes;
 using Pedido.Data.Repositories;
 using Pedido.Domain.Interfaces;
-using Pedido.Domain.Interfaces.Shared;
 using Pedido.Domain.Models;
 using Pedido.Domain.Services;
 using Pedido.Infra.Hubs;
@@ -11,64 +9,28 @@ using Pedido.Infra.Services;
 using Pedido.Server.AuthServices;
 using Pedido.Server.Controllers;
 using Pedido.Server.Startup;
-// Imports do Serilog
-using Serilog;
-using Serilog.Debugging; // Para o SelfLog
-using Serilog.Events;
-using Serilog.Sinks.PostgreSQL;
 using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 const long maxRequestBodySizeBytes = 140 * 1024 * 1024;
 
-var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
+var connectionString =
+    Environment.GetEnvironmentVariable("DefaultConnection");
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
-    throw new InvalidOperationException("A variável de ambiente DefaultConnection não foi encontrada ou configurada.");
+    throw new InvalidOperationException(
+        "A variável de ambiente DefaultConnection não foi encontrada ou configurada.");
 }
 
-// ==============================================================================
-// 1. Habilita o "Log de Erros" do próprio Serilog no Console do servidor
-// Se ele não conseguir criar a tabela ou o schema, ele vai gritar aqui.
-// ==============================================================================
-SelfLog.Enable(Console.Error);
-
-// ==============================================================================
-// 2. CONFIGURAÇÃO DO SERILOG (Criação Automática no Schema "auditoria")
-// ==============================================================================
-IDictionary<string, ColumnWriterBase> columnWriters = new Dictionary<string, ColumnWriterBase>
-{
-    { "entidade_id", new SinglePropertyColumnWriter("EntidadeId", PropertyWriteMethod.Raw, NpgsqlDbType.Uuid) },
-    { "tipo_entidade", new SinglePropertyColumnWriter("TipoEntidade", PropertyWriteMethod.ToString, NpgsqlDbType.Varchar) },
-    { "usuario_id", new SinglePropertyColumnWriter("UsuarioId", PropertyWriteMethod.Raw, NpgsqlDbType.Uuid) },
-    { "nome_usuario", new SinglePropertyColumnWriter("NomeUsuario", PropertyWriteMethod.ToString, NpgsqlDbType.Varchar) },
-    { "descricao", new RenderedMessageColumnWriter(NpgsqlDbType.Text) },
-    { "data_hora", new TimestampColumnWriter(NpgsqlDbType.Timestamp) }
-};
-
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.Logger(lc => lc
-        .Filter.ByIncludingOnly(evt => evt.Properties.ContainsKey("EntidadeId"))
-        .WriteTo.Async(a => a.PostgreSQL(
-            connectionString,
-            tableName: "historico_log",
-            columnOptions: columnWriters,
-            schemaName: "auditoria",
-            needAutoCreateTable: true)))
-    .CreateLogger();
-
-builder.Host.UseSerilog();
-builder.Host.UseSerilog();
-// ==============================================================================
+await builder.AddAuditoriaConfiguration(connectionString);
 
 builder.Services.AddScoped<IDbConnection>(
-    _ => DbConnectionFactory.CriarPostgreSqlConnection(connectionString));
+    _ => DbConnectionFactory.CriarPostgreSqlConnection(
+        Environment.GetEnvironmentVariable("DefaultConnection")
+        ?? throw new InvalidOperationException(
+            "A variável de ambiente DefaultConnection não foi encontrada ou configurada.")));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -101,6 +63,7 @@ builder.Services.AddScoped<IMateriaPrimaRepository, Pedido.Data.Repositories.Mat
 builder.Services.AddScoped<IAgendaRepository, Pedido.Data.Repositories.AgendaRepository>();
 builder.Services.AddScoped<IProgramacaoRepository, Pedido.Data.Repositories.ProgramacaoRepository>();
 builder.Services.AddScoped<IRelatorioRepository, Pedido.Data.Repositories.RelatorioRepository>();
+builder.Services.AddScoped<IAuditoriaRepository, Pedido.Data.Repositories.AuditoriaRepository>();
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UsuarioService>();
@@ -124,13 +87,6 @@ builder.Services.AddScoped<AgendaService>();
 builder.Services.AddScoped<ProgramacaoService>();
 builder.Services.AddScoped<RelatorioService>();
 builder.Services.AddScoped<IRelatorioPdfService, RelatorioPdfService>();
-
-// ==============================================================================
-// 3. O SEGREDO DO TASK.RUN: Mudamos de Scoped para Singleton!
-// Assim a classe não é "morta" pelo ASP.NET quando a API devolve o Ok(200).
-// ==============================================================================
-builder.Services.AddSingleton<IAuditoriaService, AuditoriaService>();
-
 builder.Services.AddScoped<IHttpClientService, HttpClientService>();
 builder.Services.AddScoped<IPedidoFileStorageService, FileStorageService>();
 builder.Services.AddScoped<IDesenhoFileStorageService, DesenhoFileStorageService>();
@@ -147,17 +103,23 @@ builder.Services.AddScoped<IAuthTokenService, AuthTokenService>();
 builder.Services.AddScoped<IUsuarioPasswordService, UsuarioPasswordService>();
 builder.Services.AddScoped<ClienteEnderecoService>();
 builder.Services.AddScoped<ClienteContatoService>();
-builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
-builder.Services.AddScoped<IPasswordHasher<AuthUsuario>, PasswordHasher<AuthUsuario>>();
+builder.Services.AddScoped<
+    IPasswordHasher<Usuario>,
+    PasswordHasher<Usuario>>();
+builder.Services.AddScoped<
+    IPasswordHasher<AuthUsuario>,
+    PasswordHasher<AuthUsuario>>();
 
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = maxRequestBodySizeBytes;
+    options.MultipartBodyLengthLimit =
+        maxRequestBodySizeBytes;
 });
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.Limits.MaxRequestBodySize = maxRequestBodySizeBytes;
+    options.Limits.MaxRequestBodySize =
+        maxRequestBodySizeBytes;
 });
 
 builder.Services.AddCors(options =>
@@ -204,6 +166,7 @@ app.MapMateriaPrimaEndpoints();
 app.MapAgendaEndpoints();
 app.MapProgramacaoEndpoints();
 app.MapRelatorioEndpoints();
+app.MapAuditoriaEndpoints();
 app.MapHub<PedidoHub>("/hubs/pedidos");
 app.MapHealthChecks("/health");
 

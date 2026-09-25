@@ -1,6 +1,5 @@
 using Pedido.Domain.Exceptions;
 using Pedido.Domain.Interfaces;
-using Pedido.Domain.Interfaces.Shared; // <- Import do motor de auditoria
 using Pedido.Domain.Models;
 
 namespace Pedido.Domain.Services;
@@ -10,7 +9,7 @@ public class LinhaService : BaseService
     private readonly ILinhaRepository _linhaRepository;
     private readonly IFornecedorRepository _fornecedorRepository;
     private readonly IClienteRepository _clienteRepository;
-    private readonly IAuditoriaService _auditoriaService; // <- Injeção da Auditoria
+    private readonly IAuditoriaService _auditoriaService;
 
     public LinhaService(
         ILinhaRepository linhaRepository,
@@ -24,8 +23,7 @@ public class LinhaService : BaseService
         _auditoriaService = auditoriaService;
     }
 
-    // Parâmetros do usuário adicionados para o log
-    public async Task<Guid> Cadastrar(LinhaPostRequest request, Guid usuarioId, string nomeUsuario)
+    public async Task<Guid> Cadastrar(LinhaPostRequest request, AuditoriaUsuario usuario)
     {
         try
         {
@@ -46,31 +44,11 @@ public class LinhaService : BaseService
                 Rendimento = request.Rendimento
             };
 
-            var idGerado = await _linhaRepository.Cadastrar(linha);
+            var linhaId = await _linhaRepository.Cadastrar(linha);
 
-            // ==========================================
-            // MOTOR DE AUDITORIA SEM AWAIT
-            // ==========================================
-            _ = Task.Run(() =>
-            {
-                try
-                {
-                    _auditoriaService.RegistrarAlteracao(
-                        entidadeId: linha.LinhaId,
-                        tipoEntidade: "Linha",
-                        usuarioId: usuarioId,
-                        nomeUsuario: nomeUsuario,
-                        estadoAntigo: new Linha(), // Linha vazia pois é criação nova
-                        estadoNovo: linha
-                    );
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Erro no motor de auditoria: {ex.Message}");
-                }
-            });
+            _auditoriaService.RegistrarCadastro(usuario, "Linha", linhaId, linha);
 
-            return idGerado;
+            return linhaId;
         }
         catch (ValidationException)
         {
@@ -114,34 +92,15 @@ public class LinhaService : BaseService
         }
     }
 
-    // Parâmetros do usuário adicionados para o log
-    public async Task Atualizar(Guid linhaId, LinhaPutRequest request, Guid usuarioId, string nomeUsuario)
+    public async Task Atualizar(Guid linhaId, LinhaPutRequest request, AuditoriaUsuario usuario)
     {
         try
         {
-            // Busca o estado atual para comparar depois
-            var linhaExistente = await _linhaRepository.Obter(linhaId);
-            if (linhaExistente == null) throw new NotFoundException("Linha não encontrada com o ID informado.");
+            var linhaAnterior = await _linhaRepository.Obter(linhaId);
 
             await ValidarCampos(request.NumeroLinha, request.NumeroInicial, request.NumeroFinal, request.Categoria, request.Genero, request.Exclusiva, request.ClienteId, request.ProcessoProdutivo, request.FabricanteId, linhaId);
 
-            // Cria uma cópia independente do estado antigo (Clone)
-            var estadoAntigo = new Linha
-            {
-                LinhaId = linhaExistente.LinhaId,
-                NumeroLinha = linhaExistente.NumeroLinha,
-                NumeroInicial = linhaExistente.NumeroInicial,
-                NumeroFinal = linhaExistente.NumeroFinal,
-                Categoria = linhaExistente.Categoria,
-                Genero = linhaExistente.Genero,
-                Exclusiva = linhaExistente.Exclusiva,
-                ClienteId = linhaExistente.ClienteId,
-                ProcessoProdutivo = linhaExistente.ProcessoProdutivo,
-                FabricanteId = linhaExistente.FabricanteId,
-                Rendimento = linhaExistente.Rendimento
-            };
-
-            var linhaAtualizada = new Linha
+            var linha = new Linha
             {
                 LinhaId = linhaId,
                 NumeroLinha = request.NumeroLinha,
@@ -156,31 +115,15 @@ public class LinhaService : BaseService
                 Rendimento = request.Rendimento
             };
 
-            var affected = await _linhaRepository.Atualizar(linhaAtualizada);
+            var affected = await _linhaRepository.Atualizar(linha);
 
             if (affected <= 0) throw new NotFoundException("Linha não encontrada com o ID informado.");
 
-            // ==========================================
-            // MOTOR DE AUDITORIA SEM AWAIT
-            // ==========================================
-            _ = Task.Run(() =>
+            if (linhaAnterior != null)
             {
-                try
-                {
-                    _auditoriaService.RegistrarAlteracao(
-                        entidadeId: linhaId,
-                        tipoEntidade: "Linha",
-                        usuarioId: usuarioId,
-                        nomeUsuario: nomeUsuario,
-                        estadoAntigo: estadoAntigo,
-                        estadoNovo: linhaAtualizada
-                    );
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Erro crítico no motor de auditoria: {ex.Message}");
-                }
-            });
+                var linhaAtualizada = await _linhaRepository.Obter(linhaId) ?? linha;
+                _auditoriaService.RegistrarAlteracao(usuario, "Linha", linhaId, linhaAnterior, linhaAtualizada);
+            }
         }
         catch (NotFoundException)
         {

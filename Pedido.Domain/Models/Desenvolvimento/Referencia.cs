@@ -1,28 +1,14 @@
-using Pedido.Domain.Utils;
-
 namespace Pedido.Domain.Models;
 
 public class Referencia
 {
     public Guid ReferenciaId { get; set; }
-
-    [LogDescription("linha vinculada")]
     public Guid LinhaId { get; set; }
-
-    [LogDescription("número da referência")]
     public int NumeroReferencia { get; set; }
-
-    [LogDescription("código da referência")]
     public string CodigoReferencia { get; set; } = string.Empty;
-
-    [LogDescription("sigla")]
     public string Sigla { get; set; } = string.Empty;
-
-    [LogDescription("observações da estrutura base")]
     public string? Observacao { get; set; }
-
     public DateTime DataCriacao { get; set; }
-
     public List<ReferenciaCorResponse> Cores { get; set; } = [];
 }
 
@@ -98,8 +84,6 @@ public class ReferenciaProximaResponse
 public class ReferenciaCor
 {
     public Guid ReferenciaId { get; set; }
-
-    [LogDescription("cor")]
     public Guid CorId { get; set; }
 }
 

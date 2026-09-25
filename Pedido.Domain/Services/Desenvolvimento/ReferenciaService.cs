@@ -1,6 +1,5 @@
 using Pedido.Domain.Exceptions;
 using Pedido.Domain.Interfaces;
-using Pedido.Domain.Interfaces.Shared; // <- Import do motor de auditoria
 using Pedido.Domain.Models;
 
 namespace Pedido.Domain.Services;
@@ -10,7 +9,7 @@ public class ReferenciaService : BaseService
     private readonly IReferenciaRepository _referenciaRepository;
     private readonly ILinhaRepository _linhaRepository;
     private readonly ICorRepository _corRepository;
-    private readonly IAuditoriaService _auditoriaService; // <- Injeção da Auditoria
+    private readonly IAuditoriaService _auditoriaService;
 
     public ReferenciaService(
         IReferenciaRepository referenciaRepository,
@@ -24,8 +23,7 @@ public class ReferenciaService : BaseService
         _auditoriaService = auditoriaService;
     }
 
-    // Parâmetros do usuário adicionados para o log
-    public async Task<ReferenciaPostResponse> Cadastrar(ReferenciaPostRequest request, Guid usuarioId, string nomeUsuario)
+    public async Task<ReferenciaPostResponse> Cadastrar(ReferenciaPostRequest request, AuditoriaUsuario usuario)
     {
         try
         {
@@ -68,27 +66,7 @@ public class ReferenciaService : BaseService
             if (request.CorId.HasValue)
                 referenciaCor = await CadastrarCorInterno(referenciaId, codigoReferencia, request.CorId.Value);
 
-            // ==========================================
-            // MOTOR DE AUDITORIA SEM AWAIT
-            // ==========================================
-            _ = Task.Run(() =>
-            {
-                try
-                {
-                    _auditoriaService.RegistrarAlteracao(
-                        entidadeId: referenciaId,
-                        tipoEntidade: "Referencia",
-                        usuarioId: usuarioId,
-                        nomeUsuario: nomeUsuario,
-                        estadoAntigo: new Referencia(), // Estado vazio pois é criação
-                        estadoNovo: referencia
-                    );
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Erro no motor de auditoria: {ex.Message}");
-                }
-            });
+            _auditoriaService.RegistrarCadastro(usuario, "Referência", referenciaId, referencia);
 
             return new ReferenciaPostResponse
             {
@@ -214,8 +192,7 @@ public class ReferenciaService : BaseService
         }
     }
 
-    // Parâmetros do usuário adicionados para o log
-    public async Task Atualizar(Guid referenciaId, ReferenciaPutRequest request, Guid usuarioId, string nomeUsuario)
+    public async Task Atualizar(Guid referenciaId, ReferenciaPutRequest request, AuditoriaUsuario usuario)
     {
         try
         {
@@ -234,22 +211,10 @@ public class ReferenciaService : BaseService
             if (Errors.Any())
                 throw new ValidationException(Errors);
 
-            // A. CLONAR ESTADO ANTIGO PARA O MOTOR DE LOG
-            var estadoAntigo = new Referencia
-            {
-                ReferenciaId = referenciaAtual.ReferenciaId,
-                LinhaId = referenciaAtual.LinhaId,
-                NumeroReferencia = referenciaAtual.NumeroReferencia,
-                CodigoReferencia = referenciaAtual.CodigoReferencia,
-                Sigla = referenciaAtual.Sigla,
-                Observacao = referenciaAtual.Observacao,
-                DataCriacao = referenciaAtual.DataCriacao
-            };
-
             var sigla = request.Sigla.Trim().ToUpperInvariant();
             var codigoReferencia = $"{referenciaAtual!.NumeroReferencia}{sigla}";
 
-            var referenciaAtualizada = new Referencia
+            var referencia = new Referencia
             {
                 ReferenciaId = referenciaId,
                 LinhaId = request.LinhaId,
@@ -259,34 +224,20 @@ public class ReferenciaService : BaseService
                 Observacao = request.Observacao?.Trim()
             };
 
-            var affected = await _referenciaRepository.Atualizar(referenciaAtualizada);
+            var affected = await _referenciaRepository.Atualizar(referencia);
 
             if (affected <= 0) throw new NotFoundException("Referência não encontrada com o ID informado.");
 
             if (request.CorId.HasValue)
-                await CadastrarCorInterno(referenciaId, codigoReferencia, request.CorId.Value, true);
-
-            // ==========================================
-            // MOTOR DE AUDITORIA SEM AWAIT
-            // ==========================================
-            _ = Task.Run(() =>
             {
-                try
-                {
-                    _auditoriaService.RegistrarAlteracao(
-                        entidadeId: referenciaId,
-                        tipoEntidade: "Referencia",
-                        usuarioId: usuarioId,
-                        nomeUsuario: nomeUsuario,
-                        estadoAntigo: estadoAntigo,
-                        estadoNovo: referenciaAtualizada
-                    );
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Erro crítico no motor de auditoria: {ex.Message}");
-                }
-            });
+                var corJaVinculada = await _referenciaRepository.VerificarReferenciaCorExiste(referenciaId, request.CorId.Value);
+                var referenciaCor = await CadastrarCorInterno(referenciaId, codigoReferencia, request.CorId.Value, true);
+
+                if (!corJaVinculada)
+                    RegistrarCorAdicionada(usuario, referenciaId, codigoReferencia, referenciaCor);
+            }
+
+            _auditoriaService.RegistrarAlteracao(usuario, "Referência", referenciaId, referenciaAtual, referencia);
         }
         catch (NotFoundException)
         {
@@ -302,7 +253,7 @@ public class ReferenciaService : BaseService
         }
     }
 
-    public async Task<ReferenciaCorResponse> CadastrarCor(Guid referenciaId, ReferenciaCorPostRequest request)
+    public async Task<ReferenciaCorResponse> CadastrarCor(Guid referenciaId, ReferenciaCorPostRequest request, AuditoriaUsuario usuario)
     {
         try
         {
@@ -319,7 +270,11 @@ public class ReferenciaService : BaseService
             if (Errors.Any())
                 throw new ValidationException(Errors);
 
-            return await CadastrarCorInterno(referenciaId, referencia.CodigoReferencia, request.CorId);
+            var result = await CadastrarCorInterno(referenciaId, referencia.CodigoReferencia, request.CorId);
+
+            RegistrarCorAdicionada(usuario, referenciaId, referencia.CodigoReferencia, result);
+
+            return result;
         }
         catch (NotFoundException)
         {
@@ -365,6 +320,20 @@ public class ReferenciaService : BaseService
         result.CodigoReferenciaCor = $"{codigoReferencia}-{cor.CorCodigo}";
 
         return result;
+    }
+
+    private void RegistrarCorAdicionada(
+        AuditoriaUsuario usuario,
+        Guid referenciaId,
+        string codigoReferencia,
+        ReferenciaCorResponse referenciaCor)
+    {
+        _auditoriaService.RegistrarEvento(
+            usuario,
+            "Alteração",
+            "Referência",
+            referenciaId,
+            $"Adicionou a cor {referenciaCor.CorCodigo} {referenciaCor.CorDescricao} à referência {codigoReferencia}.");
     }
 
     private async Task ValidarLinha(Guid linhaId, bool lancarErro = true)
