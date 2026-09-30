@@ -145,7 +145,7 @@ public class LinhaService : BaseService
     }
 
     private async Task ValidarCampos(
-        int linha,
+        string linha,
         short? numeroInicial,
         short? numeroFinal,
         CategoriaLinha categoria,
@@ -156,8 +156,11 @@ public class LinhaService : BaseService
         Guid? fabricanteId,
         Guid linhaId)
     {
-        if (linha <= 0)
-            AddError(nameof(Linha.NumeroLinha), "Informe a linha maior que 0.");
+        if (string.IsNullOrWhiteSpace(linha) || linha.Length != 2 || !linha.All(char.IsDigit))
+            AddError(nameof(Linha.NumeroLinha), "deve conter 2 digitos (ex: 08) ");
+
+        //if (linha <= 0)
+        //    AddError(nameof(Linha.NumeroLinha), "Informe a linha maior que 0.");
 
         if (!Enum.IsDefined(typeof(CategoriaLinha), (int)categoria))
             AddError(nameof(Linha.Categoria), "Informe a categoria.");
@@ -191,7 +194,7 @@ public class LinhaService : BaseService
                 AddError(nameof(Linha.LinhaId), "Linha não encontrada com o ID informado.");
         }
 
-        if (linha > 0)
+        if (!string.IsNullOrWhiteSpace(linha))
         {
             var linhaExiste = await _linhaRepository.VerificarLinhaExiste(linha, clienteId, linhaId);
 

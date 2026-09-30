@@ -36,7 +36,7 @@ public class FornecedorServiceIA
             return fornecedorExistente;
 
         var fornecedor = await _httpClientService.ObterDadosFornecedorCnpj(cnpj);
-        if (string.IsNullOrWhiteSpace(fornecedor.RazaoSocial))
+        if (fornecedor == null || string.IsNullOrWhiteSpace(fornecedor.RazaoSocial))
         {
             throw new ValidationException(new List<ValidationError>
             {
@@ -46,9 +46,12 @@ public class FornecedorServiceIA
 
         fornecedor.FornecedorId = Guid.NewGuid();
         fornecedor.Cnpj = cnpj;
+
         fornecedor.RazaoSocial = ObterPrimeiroValor(fornecedor.RazaoSocial);
         fornecedor.Fantasia = ObterPrimeiroValor(fornecedor.Fantasia);
         fornecedor.InscricaoEstadual = StringHelper.ObterApenasNumeros(fornecedor.InscricaoEstadual);
+
+        fornecedor.Normalizar();
 
         fornecedor.FornecedorId = await _fornecedorRepository.Cadastrar(fornecedor);
 
@@ -70,14 +73,16 @@ public class FornecedorServiceIA
                 FornecedorEnderecoId = Guid.NewGuid(),
                 FornecedorId = fornecedorId,
                 Logradouro = enderecoAnalise.Logradouro ?? string.Empty,
-                Numero = enderecoAnalise.Numero ?? string.Empty,
+                Numero = enderecoAnalise.Numero?.Trim() ?? string.Empty,
                 Complemento = enderecoAnalise.Complemento ?? string.Empty,
                 Bairro = enderecoAnalise.Bairro ?? string.Empty,
                 Cidade = enderecoAnalise.Cidade ?? string.Empty,
                 Uf = enderecoAnalise.Uf ?? string.Empty,
-                Cep = enderecoAnalise.Cep ?? string.Empty,
+                Cep = StringHelper.ObterApenasNumeros(enderecoAnalise.Cep),
                 Default = enderecosExistentes.Count == 0
             };
+
+            endereco.Normalizar();
 
             await _fornecedorEnderecoRepository.Cadastrar(endereco);
             enderecosExistentes.Add(endereco);
@@ -96,7 +101,7 @@ public class FornecedorServiceIA
                 FornecedorContatoId = Guid.NewGuid(),
                 FornecedorId = fornecedorId,
                 TipoContato = contatoAnalise.TipoContato,
-                Valor = contatoAnalise.Valor ?? string.Empty,
+                Valor = ContatoHelper.NormalizarValor(contatoAnalise.TipoContato, contatoAnalise.Valor ?? string.Empty),
                 Default = !contatosExistentes.Any(x => x.TipoContato == contatoAnalise.TipoContato)
             };
 
@@ -105,8 +110,9 @@ public class FornecedorServiceIA
         }
     }
 
-    private static string ObterPrimeiroValor(params string[] valores)
+    private static string ObterPrimeiroValor(params string[]? valores)
     {
+        if (valores == null) return string.Empty;
         return valores.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.Trim() ?? string.Empty;
     }
 }

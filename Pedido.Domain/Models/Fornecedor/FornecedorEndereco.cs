@@ -1,3 +1,5 @@
+using Pedido.Domain.Utils;
+
 namespace Pedido.Domain.Models;
 
 public class FornecedorEndereco
@@ -12,6 +14,15 @@ public class FornecedorEndereco
     public string Uf { get; set; } = string.Empty;
     public string Cep { get; set; } = string.Empty;
     public bool Default { get; set; }
+
+    public void Normalizar()
+    {
+        Logradouro = StringHelper.NormalizarTitleCase(Logradouro);
+        Complemento = StringHelper.NormalizarTitleCase(Complemento);
+        Bairro = StringHelper.NormalizarTitleCase(Bairro);
+        Cidade = StringHelper.NormalizarTitleCase(Cidade);
+        Uf = (Uf ?? string.Empty).Trim().ToUpperInvariant();
+    }
 }
 
 public class FornecedorEnderecoPostRequest
@@ -24,6 +35,15 @@ public class FornecedorEnderecoPostRequest
     public string Uf { get; set; } = string.Empty;
     public string Cep { get; set; } = string.Empty;
     public bool Default { get; set; }
+
+    public void Normalizar()
+    {
+        Logradouro = StringHelper.NormalizarTitleCase(Logradouro);
+        Complemento = StringHelper.NormalizarTitleCase(Complemento);
+        Bairro = StringHelper.NormalizarTitleCase(Bairro);
+        Cidade = StringHelper.NormalizarTitleCase(Cidade);
+        Uf = (Uf ?? string.Empty).Trim().ToUpperInvariant();
+    }
 }
 
 public class FornecedorEnderecoPutRequest
@@ -35,6 +55,15 @@ public class FornecedorEnderecoPutRequest
     public string Cidade { get; set; } = string.Empty;
     public string Uf { get; set; } = string.Empty;
     public string Cep { get; set; } = string.Empty;
+
+    public void Normalizar()
+    {
+        Logradouro = StringHelper.NormalizarTitleCase(Logradouro);
+        Complemento = StringHelper.NormalizarTitleCase(Complemento);
+        Bairro = StringHelper.NormalizarTitleCase(Bairro);
+        Cidade = StringHelper.NormalizarTitleCase(Cidade);
+        Uf = (Uf ?? string.Empty).Trim().ToUpperInvariant();
+    }
 }
 
 public class FornecedorEnderecoValidacaoRequest : FornecedorEnderecoPutRequest

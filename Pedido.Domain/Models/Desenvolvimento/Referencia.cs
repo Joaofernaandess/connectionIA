@@ -18,6 +18,7 @@ public class ReferenciaPostRequest
     public Guid? CorId { get; set; }
     public string Sigla { get; set; } = string.Empty;
     public string? Observacao { get; set; }
+    public bool PossuiDesenho { get; set; }
 }
 
 public class ReferenciaPutRequest
@@ -26,6 +27,7 @@ public class ReferenciaPutRequest
     public Guid? CorId { get; set; }
     public string Sigla { get; set; } = string.Empty;
     public string? Observacao { get; set; }
+    public bool PossuiDesenho { get; set; }
 }
 
 public class ReferenciaEntradaRequest
@@ -45,7 +47,7 @@ public class ReferenciaPostResponse
     public Guid ReferenciaId { get; set; }
     public Guid LinhaId { get; set; }
     public Guid? CorId { get; set; }
-    public int NumeroLinha { get; set; }
+    public string NumeroLinha { get; set; } = string.Empty;
     public int NumeroReferencia { get; set; }
     public string CodigoReferencia { get; set; } = string.Empty;
     public string CodigoReferenciaCor { get; set; } = string.Empty;
@@ -61,7 +63,7 @@ public class ReferenciaGetResponse
     public Guid ReferenciaId { get; set; }
     public Guid LinhaId { get; set; }
     public Guid? CorId { get; set; }
-    public int NumeroLinha { get; set; }
+    public string NumeroLinha { get; set; } = string.Empty;
     public int NumeroReferencia { get; set; }
     public string CodigoReferencia { get; set; } = string.Empty;
     public string CodigoReferenciaCor { get; set; } = string.Empty;
@@ -76,7 +78,7 @@ public class ReferenciaGetResponse
 public class ReferenciaProximaResponse
 {
     public Guid LinhaId { get; set; }
-    public int NumeroLinha { get; set; }
+    public string NumeroLinha { get; set; } = string.Empty;
     public int ProximaReferencia { get; set; }
     public string CodigoReferencia { get; set; } = string.Empty;
 }

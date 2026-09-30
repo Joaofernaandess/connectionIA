@@ -48,9 +48,8 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
         {
             await EnsureOpenAsync();
             await using var cmd = new NpgsqlCommand(sql, Connection);
-
             cmd.Parameters.Add("linha_id", NpgsqlDbType.Uuid).Value = linha.LinhaId;
-            cmd.Parameters.Add("linha", NpgsqlDbType.Integer).Value = linha.NumeroLinha;
+            cmd.Parameters.Add("linha", NpgsqlDbType.Varchar).Value = linha.NumeroLinha;
             cmd.Parameters.Add("numero_inicial", NpgsqlDbType.Smallint).Value = linha.NumeroInicial;
             cmd.Parameters.Add("numero_final", NpgsqlDbType.Smallint).Value = linha.NumeroFinal;
             cmd.Parameters.Add("categoria", NpgsqlDbType.Smallint).Value = (short)linha.Categoria;
@@ -62,7 +61,6 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
             cmd.Parameters.Add("rendimento", NpgsqlDbType.Numeric).Value = linha.Rendimento;
 
             var result = await cmd.ExecuteScalarAsync();
-
             return (Guid)result!;
         }
         catch
@@ -86,9 +84,11 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
                 exclusiva,
                 linha.cliente_id,
                 COALESCE(NULLIF(BTRIM(cliente.razao_social), ''), cliente.fantasia, '') AS cliente,
+                COALESCE(cliente.sigla, '') AS cliente_sigla,
                 processo_produtivo,
                 linha.fabricante_id,
                 COALESCE(NULLIF(BTRIM(fornecedor.razao_social), ''), fornecedor.fantasia, '') AS fabricante,
+                COALESCE(fornecedor.sigla, '') AS fabricante_sigla,
                 rendimento
             FROM
                 pedido_certo_ai.linha
@@ -99,21 +99,19 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
             WHERE 1 = 1
         ";
 
-        if (request.NumeroLinha.HasValue) sql += " AND linha.linha = @linha";
+        if (!string.IsNullOrWhiteSpace(request.NumeroLinha)) sql += " AND linha.linha = @linha";
         if (request.Categoria.HasValue) sql += " AND linha.categoria = @categoria";
         if (request.Genero.HasValue) sql += " AND linha.genero = @genero";
         if (request.FabricanteId.HasValue) sql += " AND linha.fabricante_id = @fabricante_id";
 
         var sort = string.IsNullOrWhiteSpace(request.Sort) ? "linha asc" : request.Sort.Trim().ToLowerInvariant();
-
         sql += $" ORDER BY {sort} LIMIT @top OFFSET @skip";
 
         try
         {
             await EnsureOpenAsync();
             await using var cmd = new NpgsqlCommand(sql, Connection);
-
-            cmd.Parameters.Add("linha", NpgsqlDbType.Integer).Value = request.NumeroLinha ?? 0;
+            cmd.Parameters.Add("linha", NpgsqlDbType.Varchar).Value = string.IsNullOrWhiteSpace(request.NumeroLinha) ? (object)DBNull.Value : request.NumeroLinha;
             cmd.Parameters.Add("categoria", NpgsqlDbType.Smallint).Value = request.Categoria.HasValue ? (short)request.Categoria.Value : (short)0;
             cmd.Parameters.Add("genero", NpgsqlDbType.Smallint).Value = request.Genero.HasValue ? (short)request.Genero.Value : (short)0;
             cmd.Parameters.Add("fabricante_id", NpgsqlDbType.Uuid).Value = request.FabricanteId.HasValue ? request.FabricanteId.Value : Guid.Empty;
@@ -121,13 +119,12 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
             cmd.Parameters.Add("skip", NpgsqlDbType.Integer).Value = request.Skip ?? 0;
 
             await using var reader = await cmd.ExecuteReaderAsync();
-
             while (await reader.ReadAsync())
             {
                 linhas.Add(new LinhaGetResponse
                 {
                     LinhaId = reader.GetGuid("linha_id"),
-                    NumeroLinha = reader.GetInt32("linha"),
+                    NumeroLinha = reader.GetString("linha"),
                     NumeroInicial = reader.GetInt16(reader.GetOrdinal("numero_inicial")),
                     NumeroFinal = reader.GetInt16(reader.GetOrdinal("numero_final")),
                     Categoria = (CategoriaLinha)reader.GetInt16(reader.GetOrdinal("categoria")),
@@ -135,9 +132,11 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
                     Exclusiva = reader.GetBoolean("exclusiva"),
                     ClienteId = reader.GetGuidNullable("cliente_id"),
                     Cliente = reader.GetString("cliente"),
+                    ClienteSigla = reader.GetStringNullable("cliente_sigla") ?? string.Empty,
                     ProcessoProdutivo = (ProcessoProdutivoLinha)reader.GetInt16(reader.GetOrdinal("processo_produtivo")),
                     FabricanteId = reader.GetGuidNullable("fabricante_id"),
                     Fabricante = reader.GetString("fabricante"),
+                    FabricanteSigla = reader.GetStringNullable("fabricante_sigla") ?? string.Empty,
                     Rendimento = reader.GetDecimal("rendimento")
                 });
             }
@@ -163,9 +162,11 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
                 exclusiva,
                 linha.cliente_id,
                 COALESCE(NULLIF(BTRIM(cliente.razao_social), ''), cliente.fantasia, '') AS cliente,
+                COALESCE(cliente.sigla, '') AS cliente_sigla,
                 processo_produtivo,
                 linha.fabricante_id,
                 COALESCE(NULLIF(BTRIM(fornecedor.razao_social), ''), fornecedor.fantasia, '') AS fabricante,
+                COALESCE(fornecedor.sigla, '') AS fabricante_sigla,
                 rendimento
             FROM
                 pedido_certo_ai.linha
@@ -182,17 +183,15 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
         {
             await EnsureOpenAsync();
             await using var cmd = new NpgsqlCommand(sql, Connection);
-
             cmd.Parameters.Add("linha_id", NpgsqlDbType.Uuid).Value = linhaId;
 
             await using var reader = await cmd.ExecuteReaderAsync();
-
             if (!await reader.ReadAsync()) return null;
 
             return new Linha
             {
                 LinhaId = reader.GetGuid("linha_id"),
-                NumeroLinha = reader.GetInt32("linha"),
+                NumeroLinha = reader.GetString("linha"),
                 NumeroInicial = reader.GetInt16(reader.GetOrdinal("numero_inicial")),
                 NumeroFinal = reader.GetInt16(reader.GetOrdinal("numero_final")),
                 Categoria = (CategoriaLinha)reader.GetInt16(reader.GetOrdinal("categoria")),
@@ -200,9 +199,11 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
                 Exclusiva = reader.GetBoolean("exclusiva"),
                 ClienteId = reader.GetGuidNullable("cliente_id"),
                 Cliente = reader.GetString("cliente"),
+                ClienteSigla = reader.GetStringNullable("cliente_sigla") ?? string.Empty,
                 ProcessoProdutivo = (ProcessoProdutivoLinha)reader.GetInt16(reader.GetOrdinal("processo_produtivo")),
                 FabricanteId = reader.GetGuidNullable("fabricante_id"),
                 Fabricante = reader.GetString("fabricante"),
+                FabricanteSigla = reader.GetStringNullable("fabricante_sigla") ?? string.Empty,
                 Rendimento = reader.GetDecimal("rendimento")
             };
         }
@@ -236,9 +237,8 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
         {
             await EnsureOpenAsync();
             await using var cmd = new NpgsqlCommand(sql, Connection);
-
             cmd.Parameters.Add("linha_id", NpgsqlDbType.Uuid).Value = linha.LinhaId;
-            cmd.Parameters.Add("linha", NpgsqlDbType.Integer).Value = linha.NumeroLinha;
+            cmd.Parameters.Add("linha", NpgsqlDbType.Varchar).Value = linha.NumeroLinha;
             cmd.Parameters.Add("numero_inicial", NpgsqlDbType.Smallint).Value = linha.NumeroInicial;
             cmd.Parameters.Add("numero_final", NpgsqlDbType.Smallint).Value = linha.NumeroFinal;
             cmd.Parameters.Add("categoria", NpgsqlDbType.Smallint).Value = (short)linha.Categoria;
@@ -257,7 +257,7 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
         }
     }
 
-    public async Task<bool> VerificarLinhaExiste(int linha, Guid? clienteId, Guid ignoreId)
+    public async Task<bool> VerificarLinhaExiste(string linha, Guid? clienteId, Guid ignoreId)
     {
         const string sql = @"
             SELECT
@@ -280,13 +280,11 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
         {
             await EnsureOpenAsync();
             await using var cmd = new NpgsqlCommand(sql, Connection);
-
-            cmd.Parameters.Add("linha", NpgsqlDbType.Integer).Value = linha;
+            cmd.Parameters.Add("linha", NpgsqlDbType.Varchar).Value = linha;
             cmd.Parameters.Add("cliente_id", NpgsqlDbType.Uuid).Value = clienteId.HasValue ? clienteId.Value : (object)DBNull.Value;
             cmd.Parameters.Add("ignoreId", NpgsqlDbType.Uuid).Value = ignoreId;
 
             var result = await cmd.ExecuteScalarAsync();
-
             return result != null;
         }
         catch
@@ -311,11 +309,9 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
         {
             await EnsureOpenAsync();
             await using var cmd = new NpgsqlCommand(sql, Connection);
-
             cmd.Parameters.Add("linha_id", NpgsqlDbType.Uuid).Value = linhaId;
 
             var result = await cmd.ExecuteScalarAsync();
-
             return result != null;
         }
         catch
@@ -323,5 +319,4 @@ public class LinhaRepository : BaseRepository, ILinhaRepository
             throw;
         }
     }
-
 }

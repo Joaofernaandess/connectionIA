@@ -1,3 +1,5 @@
+using Pedido.Domain.Utils;
+
 namespace Pedido.Domain.Models;
 
 public class Cliente
@@ -7,8 +9,16 @@ public class Cliente
     public string Fantasia { get; set; } = string.Empty;
     public string Cnpj { get; set; } = string.Empty;
     public string InscricaoEstadual { get; set; } = string.Empty;
+    public string? Sigla { get; set; }
     public List<ClienteEndereco> Enderecos { get; set; } = new();
     public List<ClienteContato> Contatos { get; set; } = new();
+
+    public void Normalizar()
+    {
+        RazaoSocial = StringHelper.NormalizarTitleCase(RazaoSocial);
+        Fantasia = StringHelper.NormalizarTitleCase(Fantasia);
+        Sigla = string.IsNullOrWhiteSpace(Sigla) ? null : Sigla.Trim().ToUpperInvariant();
+    }
 }
 
 public class ClientePostRequest
@@ -18,6 +28,14 @@ public class ClientePostRequest
     public string Cnpj { get; set; } = string.Empty;
     public string InscricaoEstadual { get; set; } = string.Empty;
     public string Telefone { get; set; } = string.Empty;
+    public string? Sigla { get; set; }
+
+    public void Normalizar()
+    {
+        RazaoSocial = StringHelper.NormalizarTitleCase(RazaoSocial);
+        Fantasia = StringHelper.NormalizarTitleCase(Fantasia);
+        Sigla = string.IsNullOrWhiteSpace(Sigla) ? null : Sigla.Trim().ToUpperInvariant();
+    }
 }
 
 public class ClientePutRequest
@@ -26,6 +44,14 @@ public class ClientePutRequest
     public string Fantasia { get; set; } = string.Empty;
     public string Cnpj { get; set; } = string.Empty;
     public string InscricaoEstadual { get; set; } = string.Empty;
+    public string? Sigla { get; set; }
+
+    public void Normalizar()
+    {
+        RazaoSocial = StringHelper.NormalizarTitleCase(RazaoSocial);
+        Fantasia = StringHelper.NormalizarTitleCase(Fantasia);
+        Sigla = string.IsNullOrWhiteSpace(Sigla) ? null : Sigla.Trim().ToUpperInvariant();
+    }
 }
 
 public class ClienteGetRequest : GetQueryRequestBase
@@ -42,4 +68,5 @@ public class ClienteGetResponse
     public string Cnpj { get; set; } = string.Empty;
     public string InscricaoEstadual { get; set; } = string.Empty;
     public string Telefone { get; set; } = string.Empty;
+    public string? Sigla { get; set; }
 }

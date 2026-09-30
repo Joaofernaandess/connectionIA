@@ -25,10 +25,12 @@ public class ClienteService : BaseService
     {
         try
         {
+            clienteRequest.Normalizar();
+
             clienteRequest.Cnpj = StringHelper.ObterApenasNumeros(clienteRequest.Cnpj);
             clienteRequest.InscricaoEstadual = StringHelper.ObterApenasNumeros(clienteRequest.InscricaoEstadual);
 
-            await ValidarCampos(clienteRequest, Guid.Empty);
+            await ValidarCamposBase(clienteRequest.RazaoSocial, clienteRequest.Cnpj, Guid.Empty, clienteRequest.Sigla);
 
             var cliente = new Cliente
             {
@@ -37,6 +39,7 @@ public class ClienteService : BaseService
                 Fantasia = clienteRequest.Fantasia,
                 Cnpj = clienteRequest.Cnpj,
                 InscricaoEstadual = clienteRequest.InscricaoEstadual,
+                Sigla = clienteRequest.Sigla
             };
 
             return await _clienteRepository.Cadastrar(cliente);
@@ -68,7 +71,6 @@ public class ClienteService : BaseService
         try
         {
             var cliente = await _clienteRepository.Obter(clienteId);
-
             if (cliente == null) throw new NotFoundException("Cliente não encontrado com o ID informado.");
 
             cliente.Enderecos = await _clienteEnderecoRepository.Obter(cliente.ClienteId);
@@ -90,10 +92,12 @@ public class ClienteService : BaseService
     {
         try
         {
+            clienteRequest.Normalizar();
+
             clienteRequest.Cnpj = StringHelper.ObterApenasNumeros(clienteRequest.Cnpj);
             clienteRequest.InscricaoEstadual = StringHelper.ObterApenasNumeros(clienteRequest.InscricaoEstadual);
 
-            await ValidarCampos(clienteRequest, clienteId);
+            await ValidarCamposBase(clienteRequest.RazaoSocial, clienteRequest.Cnpj, clienteId, clienteRequest.Sigla);
 
             var cliente = new Cliente
             {
@@ -101,11 +105,11 @@ public class ClienteService : BaseService
                 RazaoSocial = clienteRequest.RazaoSocial,
                 Fantasia = clienteRequest.Fantasia,
                 Cnpj = clienteRequest.Cnpj,
-                InscricaoEstadual = clienteRequest.InscricaoEstadual
+                InscricaoEstadual = clienteRequest.InscricaoEstadual,
+                Sigla = clienteRequest.Sigla
             };
 
             var affected = await _clienteRepository.Atualizar(cliente);
-
             if (affected <= 0) throw new NotFoundException("Cliente não encontrado com o ID informado.");
         }
         catch (NotFoundException)
@@ -127,17 +131,7 @@ public class ClienteService : BaseService
         return await _clienteRepository.VerificarClienteExiste(clienteId);
     }
 
-    private async Task ValidarCampos(ClientePostRequest cliente, Guid clienteId)
-    {
-        await ValidarCamposBase(cliente.RazaoSocial, cliente.Cnpj, clienteId);
-    }
-
-    private async Task ValidarCampos(ClientePutRequest cliente, Guid clienteId)
-    {
-        await ValidarCamposBase(cliente.RazaoSocial, cliente.Cnpj, clienteId);
-    }
-
-    private async Task ValidarCamposBase(string razaoSocial, string cnpj, Guid clienteId)
+    private async Task ValidarCamposBase(string razaoSocial, string cnpj, Guid clienteId, string? sigla)
     {
         if (string.IsNullOrWhiteSpace(razaoSocial))
             AddError(nameof(Cliente.RazaoSocial), "Informe a razão social.");
@@ -149,9 +143,17 @@ public class ClienteService : BaseService
         else
         {
             var cnpjExiste = await _clienteRepository.VerificarClienteExiste(cnpj, clienteId);
-
             if (cnpjExiste)
                 AddError(nameof(Cliente.Cnpj), "Este CNPJ já está sendo utilizado.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(sigla))
+        {
+            var siglaLimpa = sigla.Trim();
+            if (siglaLimpa.Length != 2)
+            {
+                AddError(nameof(Cliente.Sigla), "A sigla deve conter exatamente 2 caracteres.");
+            }
         }
 
         if (Errors.Any())

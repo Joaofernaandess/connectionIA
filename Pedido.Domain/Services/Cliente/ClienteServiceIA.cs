@@ -30,7 +30,6 @@ public class ClienteServiceIA
     public async Task<Guid> CadastrarOuObterPorAnaliseIA(ClienteAnaliseIARequest analise)
     {
         var cliente = await CadastrarOuObterClientePorAnaliseIA(analise);
-
         return cliente.ClienteId;
     }
 
@@ -46,7 +45,7 @@ public class ClienteServiceIA
             return clienteExistente;
 
         var cliente = await _httpClientService.ObterDadosClienteCnpj(cnpj);
-        if (string.IsNullOrWhiteSpace(cliente.RazaoSocial))
+        if (cliente == null || string.IsNullOrWhiteSpace(cliente.RazaoSocial))
         {
             throw new ValidationException(new List<ValidationError>
             {
@@ -56,9 +55,12 @@ public class ClienteServiceIA
 
         cliente.ClienteId = Guid.NewGuid();
         cliente.Cnpj = cnpj;
+
         cliente.RazaoSocial = ObterPrimeiroValor(cliente.RazaoSocial);
         cliente.Fantasia = ObterPrimeiroValor(cliente.Fantasia);
         cliente.InscricaoEstadual = StringHelper.ObterApenasNumeros(cliente.InscricaoEstadual);
+
+        cliente.Normalizar();
 
         cliente.ClienteId = await _clienteRepository.Cadastrar(cliente);
 
@@ -97,14 +99,16 @@ public class ClienteServiceIA
                 ClienteEnderecoId = Guid.NewGuid(),
                 ClienteId = clienteId,
                 Logradouro = enderecoAnalise.Logradouro ?? string.Empty,
-                Numero = enderecoAnalise.Numero ?? string.Empty,
+                Numero = enderecoAnalise.Numero?.Trim() ?? string.Empty,
                 Complemento = enderecoAnalise.Complemento ?? string.Empty,
                 Bairro = enderecoAnalise.Bairro ?? string.Empty,
                 Cidade = enderecoAnalise.Cidade ?? string.Empty,
                 Uf = enderecoAnalise.Uf ?? string.Empty,
-                Cep = enderecoAnalise.Cep ?? string.Empty,
+                Cep = StringHelper.ObterApenasNumeros(enderecoAnalise.Cep),
                 Default = enderecosExistentes.Count == 0
             };
+
+            endereco.Normalizar();
 
             await _clienteEnderecoRepository.Cadastrar(endereco);
             enderecosExistentes.Add(endereco);
@@ -123,7 +127,7 @@ public class ClienteServiceIA
                 ClienteContatoId = Guid.NewGuid(),
                 ClienteId = clienteId,
                 TipoContato = contatoAnalise.TipoContato,
-                Valor = contatoAnalise.Valor ?? string.Empty,
+                Valor = ContatoHelper.NormalizarValor(contatoAnalise.TipoContato, contatoAnalise.Valor ?? string.Empty),
                 Default = !contatosExistentes.Any(x => x.TipoContato == contatoAnalise.TipoContato)
             };
 
@@ -132,8 +136,9 @@ public class ClienteServiceIA
         }
     }
 
-    private static string ObterPrimeiroValor(params string[] valores)
+    private static string ObterPrimeiroValor(params string[]? valores)
     {
+        if (valores == null) return string.Empty;
         return valores.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.Trim() ?? string.Empty;
     }
 }

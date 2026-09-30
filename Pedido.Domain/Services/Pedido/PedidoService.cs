@@ -114,6 +114,8 @@ public class PedidoService : BaseService
     {
         try
         {
+            pedidoRequest.Normalizar();
+
             if (status == null)
                 await ValidarPedidoOcr(pedidoRequest);
 

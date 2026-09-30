@@ -28,8 +28,12 @@ public class ReferenciaService : BaseService
         try
         {
             await ValidarLinha(request.LinhaId, false);
-            await ValidarCor(request.CorId, false, false);
+
+            await ValidarCor(request.CorId, false, true);
             ValidarSigla(request.Sigla);
+
+            if (!request.PossuiDesenho)
+                AddError(nameof(ReferenciaEntradaRequest.PossuiDesenho), "informe o desenho");
 
             if (Errors.Any())
                 throw new ValidationException(Errors);
@@ -48,7 +52,10 @@ public class ReferenciaService : BaseService
                 throw new ValidationException(Errors);
 
             var sigla = request.Sigla.Trim().ToUpperInvariant();
-            var codigoReferencia = $"{proximaReferencia.CodigoReferencia}{sigla}";
+
+            var linhaEstrutura = proximaReferencia.NumeroLinha;
+
+            var codigoReferencia = $"{linhaEstrutura}{proximaReferencia.ProximaReferencia:D3}{sigla}";
 
             var referencia = new Referencia
             {
@@ -205,14 +212,23 @@ public class ReferenciaService : BaseService
                 throw new NotFoundException("Referência não encontrada com o ID informado.");
 
             await ValidarLinha(request.LinhaId, false);
-            await ValidarCor(request.CorId, false, false);
-            ValidarSigla(request.Sigla);
+
+            var coresExistentes = await _referenciaRepository.ObterCores(referenciaId);
+            bool temCorVinculada = coresExistentes.Any();
+            await ValidarCor(request.CorId, false, !temCorVinculada);
+
+            if (!request.PossuiDesenho)
+                AddError(nameof(ReferenciaEntradaRequest.PossuiDesenho), "informe o desenho");
 
             if (Errors.Any())
                 throw new ValidationException(Errors);
 
+            var linha = await _linhaRepository.Obter(request.LinhaId);
             var sigla = request.Sigla.Trim().ToUpperInvariant();
-            var codigoReferencia = $"{referenciaAtual!.NumeroReferencia}{sigla}";
+
+            var linhaEstrutura = linha!.NumeroLinha;
+
+            var codigoReferencia = $"{linhaEstrutura}{referenciaAtual.NumeroReferencia:D3}{sigla}";
 
             var referencia = new Referencia
             {
@@ -376,6 +392,6 @@ public class ReferenciaService : BaseService
     private void ValidarSigla(string sigla)
     {
         if (string.IsNullOrWhiteSpace(sigla))
-            AddError(nameof(Referencia.Sigla), "Informe a sigla.");
+            AddError(nameof(Referencia.Sigla), "Informe a sigla do cliente ou do fornecedor.");
     }
 }

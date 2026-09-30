@@ -8,6 +8,6 @@ public interface ILinhaRepository
     Task<List<LinhaGetResponse>> Obter(LinhaGetRequest request);
     Task<Linha?> Obter(Guid linhaId);
     Task<int> Atualizar(Linha linha);
-    Task<bool> VerificarLinhaExiste(int linha, Guid? clienteId, Guid ignoreId);
+    Task<bool> VerificarLinhaExiste(string linha, Guid? clienteId, Guid ignoreId);
     Task<bool> VerificarLinhaExiste(Guid linhaId);
 }

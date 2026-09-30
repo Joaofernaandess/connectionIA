@@ -44,6 +44,10 @@ public class PedidoPutRequest
     public decimal TotalLiquido { get; set; }
     public string Observacoes { get; set; } = string.Empty;
     public List<PedidoItemPostRequest> Itens { get; set; } = new();
+    public void Normalizar()
+    {
+        Representante = Utils.StringHelper.NormalizarTitleCase(Representante);
+    }
 }
 
 public class PedidoGetRequest : GetQueryRequestBase

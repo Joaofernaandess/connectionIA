@@ -20,7 +20,8 @@ public class ClienteRepository : BaseRepository, IClienteRepository
                 razao_social,
                 fantasia,
                 cnpj,
-                inscricao_estadual
+                inscricao_estadual,
+                sigla
             )
             VALUES
             (
@@ -28,7 +29,8 @@ public class ClienteRepository : BaseRepository, IClienteRepository
                 @razao_social,
                 @fantasia,
                 @cnpj,
-                @inscricao_estadual
+                @inscricao_estadual,
+                @sigla
             )
             RETURNING cliente_id;
         ";
@@ -36,7 +38,6 @@ public class ClienteRepository : BaseRepository, IClienteRepository
         try
         {
             await EnsureOpenAsync();
-
             await using var cmd = new NpgsqlCommand(sql, Connection);
 
             cmd.Parameters.Add("cliente_id", NpgsqlDbType.Uuid).Value = cliente.ClienteId;
@@ -44,9 +45,9 @@ public class ClienteRepository : BaseRepository, IClienteRepository
             cmd.Parameters.Add("fantasia", NpgsqlDbType.Varchar).Value = cliente.Fantasia;
             cmd.Parameters.Add("cnpj", NpgsqlDbType.Varchar).Value = StringHelper.ObterApenasNumeros(cliente.Cnpj);
             cmd.Parameters.Add("inscricao_estadual", NpgsqlDbType.Varchar).Value = StringHelper.ObterApenasNumeros(cliente.InscricaoEstadual);
+            cmd.Parameters.Add("sigla", NpgsqlDbType.Varchar).Value = (object?)cliente.Sigla ?? DBNull.Value;
 
             var result = await cmd.ExecuteScalarAsync();
-
             return (Guid)result!;
         }
         catch
@@ -66,6 +67,7 @@ public class ClienteRepository : BaseRepository, IClienteRepository
                 fantasia,
                 cnpj,
                 inscricao_estadual,
+                sigla,
                 COALESCE((
                     SELECT valor
                     FROM pedido_certo_ai.cliente_contato
@@ -80,17 +82,14 @@ public class ClienteRepository : BaseRepository, IClienteRepository
         ";
 
         if (!string.IsNullOrWhiteSpace(request.RazaoSocial)) sql += " AND razao_social ILIKE @razao_social";
-
         if (!string.IsNullOrWhiteSpace(request.Cnpj)) sql += " AND regexp_replace(cnpj, '\\D', '', 'g') ILIKE @cnpj";
 
         var sort = string.IsNullOrWhiteSpace(request.Sort) ? "razao_social asc" : request.Sort.Trim().ToLowerInvariant();
-
         sql += $" ORDER BY {sort} LIMIT @top OFFSET @skip";
 
         try
         {
             await EnsureOpenAsync();
-
             await using var cmd = new NpgsqlCommand(sql, Connection);
 
             cmd.Parameters.Add("razao_social", NpgsqlDbType.Varchar).Value = $"%{request.RazaoSocial ?? string.Empty}%";
@@ -110,7 +109,8 @@ public class ClienteRepository : BaseRepository, IClienteRepository
                     Fantasia = reader.GetString("fantasia"),
                     Cnpj = reader.GetString("cnpj"),
                     InscricaoEstadual = reader.GetString("inscricao_estadual"),
-                    Telefone = reader.GetString("telefone")
+                    Telefone = reader.GetString("telefone"),
+                    Sigla = reader.GetStringNullable("sigla")
                 });
             }
 
@@ -130,7 +130,8 @@ public class ClienteRepository : BaseRepository, IClienteRepository
                 razao_social,
                 fantasia,
                 cnpj,
-                inscricao_estadual
+                inscricao_estadual,
+                sigla
             FROM
                 pedido_certo_ai.cliente
             WHERE
@@ -141,13 +142,10 @@ public class ClienteRepository : BaseRepository, IClienteRepository
         try
         {
             await EnsureOpenAsync();
-
             await using var cmd = new NpgsqlCommand(sql, Connection);
-
             cmd.Parameters.Add("cliente_id", NpgsqlDbType.Uuid).Value = clienteId;
 
             await using var reader = await cmd.ExecuteReaderAsync();
-
             if (!await reader.ReadAsync()) return null;
 
             var cliente = new Cliente
@@ -156,7 +154,8 @@ public class ClienteRepository : BaseRepository, IClienteRepository
                 RazaoSocial = reader.GetString("razao_social"),
                 Fantasia = reader.GetString("fantasia"),
                 Cnpj = reader.GetString("cnpj"),
-                InscricaoEstadual = reader.GetString("inscricao_estadual")
+                InscricaoEstadual = reader.GetString("inscricao_estadual"),
+                Sigla = reader.GetStringNullable("sigla")
             };
 
             return cliente;
@@ -176,7 +175,8 @@ public class ClienteRepository : BaseRepository, IClienteRepository
                 razao_social = @razao_social,
                 fantasia = @fantasia,
                 cnpj = @cnpj,
-                inscricao_estadual = @inscricao_estadual
+                inscricao_estadual = @inscricao_estadual,
+                sigla = @sigla
             WHERE
                 cliente_id = @cliente_id;
         ";
@@ -184,7 +184,6 @@ public class ClienteRepository : BaseRepository, IClienteRepository
         try
         {
             await EnsureOpenAsync();
-
             await using var cmd = new NpgsqlCommand(sql, Connection);
 
             cmd.Parameters.Add("cliente_id", NpgsqlDbType.Uuid).Value = cliente.ClienteId;
@@ -192,6 +191,7 @@ public class ClienteRepository : BaseRepository, IClienteRepository
             cmd.Parameters.Add("fantasia", NpgsqlDbType.Varchar).Value = cliente.Fantasia;
             cmd.Parameters.Add("cnpj", NpgsqlDbType.Varchar).Value = StringHelper.ObterApenasNumeros(cliente.Cnpj);
             cmd.Parameters.Add("inscricao_estadual", NpgsqlDbType.Varchar).Value = StringHelper.ObterApenasNumeros(cliente.InscricaoEstadual);
+            cmd.Parameters.Add("sigla", NpgsqlDbType.Varchar).Value = (object?)cliente.Sigla ?? DBNull.Value;
 
             return await cmd.ExecuteNonQueryAsync();
         }
@@ -209,7 +209,8 @@ public class ClienteRepository : BaseRepository, IClienteRepository
                 razao_social,
                 fantasia,
                 cnpj,
-                inscricao_estadual
+                inscricao_estadual,
+                sigla
             FROM
                 pedido_certo_ai.cliente
             WHERE
@@ -220,13 +221,10 @@ public class ClienteRepository : BaseRepository, IClienteRepository
         try
         {
             await EnsureOpenAsync();
-
             await using var cmd = new NpgsqlCommand(sql, Connection);
-
             cmd.Parameters.Add("cnpj", NpgsqlDbType.Varchar).Value = StringHelper.ObterApenasNumeros(cnpj);
 
             await using var reader = await cmd.ExecuteReaderAsync();
-
             if (!await reader.ReadAsync()) return null;
 
             return new Cliente
@@ -235,7 +233,8 @@ public class ClienteRepository : BaseRepository, IClienteRepository
                 RazaoSocial = reader.GetString("razao_social"),
                 Fantasia = reader.GetString("fantasia"),
                 Cnpj = reader.GetString("cnpj"),
-                InscricaoEstadual = reader.GetString("inscricao_estadual")
+                InscricaoEstadual = reader.GetString("inscricao_estadual"),
+                Sigla = reader.GetStringNullable("sigla")
             };
         }
         catch
@@ -261,14 +260,11 @@ public class ClienteRepository : BaseRepository, IClienteRepository
         try
         {
             await EnsureOpenAsync();
-
             await using var cmd = new NpgsqlCommand(sql, Connection);
-
             cmd.Parameters.Add("cnpj", NpgsqlDbType.Varchar).Value = StringHelper.ObterApenasNumeros(cnpj);
             cmd.Parameters.Add("ignoreId", NpgsqlDbType.Uuid).Value = ignoreId;
 
             var result = await cmd.ExecuteScalarAsync();
-
             return result != null;
         }
         catch
@@ -292,13 +288,10 @@ public class ClienteRepository : BaseRepository, IClienteRepository
         try
         {
             await EnsureOpenAsync();
-
             await using var cmd = new NpgsqlCommand(sql, Connection);
-
             cmd.Parameters.Add("cliente_id", NpgsqlDbType.Uuid).Value = clienteId;
 
             var result = await cmd.ExecuteScalarAsync();
-
             return result != null;
         }
         catch

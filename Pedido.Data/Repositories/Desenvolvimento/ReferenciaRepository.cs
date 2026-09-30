@@ -163,7 +163,7 @@ public class ReferenciaRepository : BaseRepository, IReferenciaRepository
                     ReferenciaId = reader.GetGuid("referencia_id"),
                     LinhaId = reader.GetGuid("linha_id"),
                     CorId = reader.GetGuidNullable("cor_id"),
-                    NumeroLinha = reader.GetInt32("linha"),
+                    NumeroLinha = reader.GetString("linha"),
                     NumeroReferencia = reader.GetInt32("numero_referencia"),
                     CodigoReferencia = reader.GetString("referencia"),
                     CodigoReferenciaCor = reader.GetString("referencia_cor"),
@@ -235,7 +235,7 @@ public class ReferenciaRepository : BaseRepository, IReferenciaRepository
             SELECT
                 linha.linha_id,
                 linha.linha,
-                COALESCE(MAX(referencia.numero_referencia), linha.linha) + 1 AS proxima_referencia
+                COALESCE(MAX(referencia.numero_referencia), 0) + 1 AS proxima_referencia
             FROM
                 pedido_certo_ai.linha
             LEFT JOIN
@@ -252,11 +252,9 @@ public class ReferenciaRepository : BaseRepository, IReferenciaRepository
         {
             await EnsureOpenAsync();
             await using var cmd = new NpgsqlCommand(sql, Connection);
-
             cmd.Parameters.Add("linha_id", NpgsqlDbType.Uuid).Value = linhaId;
 
             await using var reader = await cmd.ExecuteReaderAsync();
-
             if (!await reader.ReadAsync()) return null;
 
             var proximaReferencia = reader.GetInt32("proxima_referencia");
@@ -264,9 +262,9 @@ public class ReferenciaRepository : BaseRepository, IReferenciaRepository
             return new ReferenciaProximaResponse
             {
                 LinhaId = reader.GetGuid("linha_id"),
-                NumeroLinha = reader.GetInt32("linha"),
+                NumeroLinha = reader.GetString("linha"),
                 ProximaReferencia = proximaReferencia,
-                CodigoReferencia = proximaReferencia.ToString()
+                CodigoReferencia = proximaReferencia.ToString("D3")
             };
         }
         catch
