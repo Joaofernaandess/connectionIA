@@ -2,7 +2,7 @@ namespace Pedido.Domain.Models;
 
 public class Cor
 {
-    public Guid CorId { get; set; }
+    public Guid? CorId { get; set; }14
     public string CorDescricao { get; set; } = string.Empty;
     public string CorCodigo { get; set; } = string.Empty;
 }
@@ -15,7 +15,7 @@ public class CorPostRequest
 
 public class CorPostResponse
 {
-    public Guid CorId { get; set; }
+    public Guid? CorId { get; set; }
     public string CorDescricao { get; set; } = string.Empty;
     public string CorCodigo { get; set; } = string.Empty;
 }
@@ -27,7 +27,7 @@ public class CorGetRequest : GetQueryRequestBase
 
 public class CorGetResponse
 {
-    public Guid CorId { get; set; }
+    public Guid? CorId { get; set; }
     public string CorDescricao { get; set; } = string.Empty;
     public string CorCodigo { get; set; } = string.Empty;
 }
